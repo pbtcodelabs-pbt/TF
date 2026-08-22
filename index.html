@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>توجہ فرمائیں</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F2E2B">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  /* مقامی فونٹس — ہر فونٹ الگ فائل میں، fonts/ فولڈر میں۔
+     براؤزر صرف وہی فونٹ ڈاؤن لوڈ کرے گا جو اصل میں سکرین پر استعمال ہو رہا ہے،
+     اس لیے صفحہ خود بھاری نہیں ہوتا (font-display: swap)۔ */
+  @font-face{
+    font-family:'Jameel Noori Nastaleeq';
+    src:url('fonts/Jameel_Noori_Nastaleeq_Regular.ttf') format('truetype');
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'Jameel Noori Nastaleeq Kasheeda';
+    src:url('fonts/Jameel_Noori_Nastaleeq_Kasheeda.ttf') format('truetype');
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'AA Sameer Almas';
+    src:url('fonts/AA_Sameer_Almas_Regular.ttf') format('truetype');
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'Nafees Naskh';
+    src:url('fonts/300_Regular.ttf') format('truetype');
+    font-display:swap;
+  }
+</style>
+<style>
+  :root{
+    --paper:#FBF6EC;
+    --ink:#3B2A2E;
+    --board:#1F2E2B;
+    --board-ink:#F3E9C9;
+    --brass:#C9A227;
+    --sabzi:#5C7A5A;
+    --line:#E4D9BE;
+    --danger:#A24A3F;
+    --radius:14px;
+    --ui-font:'Nafees Naskh', serif;
+    --content-font:'Jameel Noori Nastaleeq', serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#DCD3BE;
+    font-family:var(--ui-font);
+    display:flex;
+    justify-content:center;
+    padding:24px 10px;
+    min-height:100vh;
+  }
+  .phone{
+    width:390px;
+    max-width:100%;
+    background:var(--paper);
+    border-radius:32px;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+    overflow:hidden;
+    border:6px solid #2b2320;
+    display:flex;
+    flex-direction:column;
+    min-height:760px;
+  }
+
+  /* ===== Ticker board ===== */
+  .board{
+    background:var(--board);
+    color:var(--board-ink);
+    padding:14px 0;
+    position:relative;
+    overflow:hidden;
+    border-bottom:4px solid var(--brass);
+  }
+  .board::before{
+    content:"";
+    position:absolute; top:8px; right:14px;
+    width:10px; height:10px; border-radius:50%;
+    background:var(--brass);
+    box-shadow:0 2px 4px rgba(0,0,0,.4);
+  }
+  .board::after{
+    content:"";
+    position:absolute; top:8px; left:14px;
+    width:10px; height:10px; border-radius:50%;
+    background:var(--brass);
+    box-shadow:0 2px 4px rgba(0,0,0,.4);
+  }
+  .board-label{
+    text-align:center;
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--brass);
+    margin-bottom:6px;
+    font-family:var(--ui-font);
+  }
+  .ticker-track{
+    width:100%;
+    overflow:hidden;
+    height:46px;
+    display:flex;
+    align-items:center;
+  }
+  .ticker-track.empty{ height:32px; }
+  .ticker-text{
+    white-space:nowrap;
+    padding-inline-start:100%;
+    font-size:26px;
+    font-family:var(--content-font);
+    animation:scroll-rtl linear infinite;
+  }
+  @keyframes scroll-rtl{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-200%); }
+  }
+  .ticker-placeholder{
+    text-align:center;
+    width:100%;
+    font-size:14px;
+    color:#8b8578;
+    font-family:var(--ui-font);
+  }
+
+  /* ===== Header row ===== */
+  .headrow{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .headrow h1{ font-size:17px; margin:0; color:var(--ink); font-family:var(--ui-font); font-weight:600;}
+  .icon-btn{
+    background:none;border:none;font-size:19px;cursor:pointer;color:var(--ink);
+    padding:6px;
+  }
+
+  /* ===== Settings panel ===== */
+  .settings{
+    display:none;
+    padding:14px 16px;
+    background:#F3ECDA;
+    border-bottom:1px solid var(--line);
+    font-size:13px;
+  }
+  .settings.open{ display:block; }
+  .settings h3{ margin:0 0 8px; font-size:13px; color:var(--ink); font-family:var(--ui-font);}
+  .row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
+  .swatch{
+    width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  }
+  .swatch.active{ border-color:var(--ink); }
+  select, input[type=text], input[type=time]{
+    font-family:var(--ui-font);
+    padding:6px 8px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    font-size:13px;
+  }
+
+  /* ===== Add form ===== */
+  .addform{
+    padding:14px 16px;
+    border-bottom:1px solid var(--line);
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .addform textarea{
+    font-family:var(--content-font);
+    font-size:18px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    resize:none;
+    min-height:44px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .addform-row{ display:flex; gap:8px; }
+  .addform-row select, .addform-row input{ flex:1; }
+  .btn{
+    border:none; border-radius:10px; padding:9px 14px; cursor:pointer;
+    font-family:var(--ui-font); font-size:14px; font-weight:600;
+  }
+  .btn-primary{ background:var(--brass); color:#2b2320; }
+  .btn-ghost{ background:transparent; color:var(--ink); border:1px solid var(--line); }
+
+  /* ===== List ===== */
+  .list{ padding:10px 16px; flex:1; overflow-y:auto; }
+  .list h2{ font-size:13px; color:#8b8578; margin:10px 0 6px; font-family:var(--ui-font); font-weight:600;}
+  .item{
+    display:flex; align-items:flex-start; gap:10px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .item.done{ opacity:.55; }
+  .item .check{
+    width:22px;height:22px;border-radius:50%;
+    border:2px solid var(--sabzi);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer; flex-shrink:0; margin-top:2px;
+    font-size:13px; color:var(--sabzi); background:#fff;
+  }
+  .item.done .check{ background:var(--sabzi); color:#fff; }
+  .item-body{ flex:1; min-width:0; }
+  .item-text{
+    font-family:var(--content-font);
+    font-size:19px; color:var(--ink); line-height:1.5;
+  }
+  .item.done .item-text{ text-decoration:line-through; }
+  .item-meta{
+    font-size:11px; color:#9b9484; margin-top:3px; font-family:var(--ui-font);
+  }
+  .item-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .item-actions button{
+    border:none; background:none; cursor:pointer; font-size:15px; color:#a89f8a; padding:2px;
+  }
+  .item-actions button.del:hover{ color:var(--danger); }
+  .empty-note{
+    text-align:center; color:#a89f8a; font-size:13px; padding:20px 0; font-family:var(--ui-font);
+  }
+  .sync-note{
+    font-size:11px; text-align:center; color:#a89f8a; padding:6px 16px 12px; font-family:var(--ui-font);
+  }
+
+  /* ===== Position picker ===== */
+  .pos-picker{
+    display:flex; flex-direction:column; gap:6px;
+    background:#20201c; border-radius:12px; padding:8px;
+    height:140px; justify-content:space-between; position:relative;
+  }
+  .pos-slot{
+    flex:1; border-radius:8px; border:2px dashed #4a473d; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:#8a8674; font-size:11px; font-family:var(--ui-font);
+  }
+  .pos-slot.active{ border-color:var(--brass); border-style:solid; background:rgba(201,162,39,.15); color:var(--brass); }
+
+  /* ===== Preview overlay ===== */
+  .preview-overlay{
+    display:none;
+    position:absolute; inset:0;
+    background:#000;
+    z-index:50;
+    flex-direction:column;
+  }
+  .preview-overlay.open{ display:flex; }
+  .preview-screen{
+    flex:1; position:relative; background:linear-gradient(180deg,#3a4a5a,#1c2530);
+    display:flex; flex-direction:column;
+  }
+  .preview-ticker{
+    position:absolute; left:0; right:0;
+    padding:10px 0; overflow:hidden;
+    display:flex; align-items:center;
+  }
+  .preview-ticker.top{ top:40px; }
+  .preview-ticker.middle{ top:50%; transform:translateY(-50%); }
+  .preview-ticker.bottom{ bottom:40px; }
+  .preview-ticker-text{
+    white-space:nowrap; font-size:24px; padding-inline-start:100%;
+    animation:scroll-rtl 14s linear infinite;
+  }
+  .preview-close{
+    align-self:flex-end; margin:14px; background:rgba(255,255,255,.15); color:#fff;
+    border:none; border-radius:50%; width:34px;height:34px; font-size:16px; cursor:pointer;
+  }
+  .preview-hint{
+    position:absolute; bottom:16px; left:0; right:0; text-align:center;
+    color:rgba(255,255,255,.55); font-size:12px; font-family:var(--ui-font);
+  }
+
+  /* border styles applied to ticker text wrapper */
+  .border-solid{ border:3px solid; border-radius:6px; padding:4px 16px; }
+  .border-double{ border:4px double; border-radius:4px; padding:4px 16px; }
+  .border-dashed{ border:2px dashed; border-radius:6px; padding:4px 16px; }
+  .border-none{ border:none; padding:4px 16px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <div class="board">
+    <div class="board-label">توجہ فرمائیں — چل رہا ہے</div>
+    <div class="ticker-track" id="tickerTrack">
+      <div class="ticker-placeholder" id="tickerPlaceholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>
+    </div>
+  </div>
+
+  <div class="headrow">
+    <h1>توجہ فرمائیں</h1>
+    <button class="icon-btn" id="settingsToggle" title="سیٹنگز">⚙︎</button>
+  </div>
+
+  <div class="settings" id="settingsPanel">
+    <h3>رنگ سکیم</h3>
+    <div class="row" id="colorRow"></div>
+    <h3>فونٹ</h3>
+    <div class="row">
+      <select id="fontSelect">
+        <option value="Jameel Noori Nastaleeq">نوری نستعلیق — ریگولر</option>
+        <option value="Jameel Noori Nastaleeq Kasheeda">نوری نستعلیق — کشیدہ</option>
+        <option value="AA Sameer Almas">اے اے سمیر الماس</option>
+        <option value="Nafees Naskh">نفیس نسخ</option>
+      </select>
+    </div>
+    <h3>سکرول کی رفتار</h3>
+    <div class="row">
+      <select id="speedSelect">
+        <option value="22">آہستہ</option>
+        <option value="14" selected>درمیانہ</option>
+        <option value="8">تیز</option>
+      </select>
+    </div>
+
+    <h3>ٹکر کی پوزیشن (سکرین پر جگہ)</h3>
+    <div class="pos-picker" id="posPicker">
+      <div class="pos-slot active" data-pos="top">اوپر</div>
+      <div class="pos-slot" data-pos="middle">درمیان</div>
+      <div class="pos-slot" data-pos="bottom">نیچے</div>
+    </div>
+
+    <h3 style="margin-top:12px;">ٹکر کا بیک گراؤنڈ</h3>
+    <div class="row">
+      <input type="color" id="tickerBg" value="#1F2E2B">
+      <span>لکھائی کا رنگ</span>
+      <input type="color" id="tickerFg" value="#F3E9C9">
+    </div>
+
+    <h3>بارڈر سٹائل</h3>
+    <div class="row">
+      <select id="borderSelect">
+        <option value="border-none">بغیر بارڈر</option>
+        <option value="border-solid" selected>ٹھوس فریم</option>
+        <option value="border-double">ڈبل فریم (خبرنامہ سٹائل)</option>
+        <option value="border-dashed">ڈیشڈ فریم</option>
+      </select>
+    </div>
+
+    <button class="btn btn-ghost" id="previewBtn" style="width:100%;margin-top:6px;">پورا موبائل پریویو دیکھیں</button>
+
+    <div style="font-size:11px;color:#9b9484;margin-top:8px;">
+      نوٹ: یہ چاروں فونٹ (نوری نستعلیق ریگولر/کشیدہ، اے اے سمیر الماس، نفیس نسخ) آپ کی اپنی فائلیں ہیں — fonts/ فولڈر میں الگ سے رکھی گئی ہیں، صفحہ خود ہلکا رہتا ہے۔
+    </div>
+  </div>
+
+  <div class="addform">
+    <textarea id="noteText" placeholder="مثال: آتے ہوئے دودھ لیتے آئیے گا"></textarea>
+    <div class="addform-row">
+      <input type="time" id="noteTime">
+      <select id="noteFreq">
+        <option value="once">صرف ایک بار</option>
+        <option value="30min">ہر آدھے گھنٹے بعد</option>
+        <option value="60min">ہر گھنٹے بعد</option>
+        <option value="daily">روزانہ اسی وقت</option>
+      </select>
+    </div>
+    <div class="addform-row">
+      <button class="btn btn-primary" id="addBtn" style="flex:1;">شامل کریں</button>
+      <button class="btn btn-ghost" id="testBtn" style="flex:1;">ابھی چلا کر دیکھیں</button>
+    </div>
+  </div>
+
+  <div class="list">
+    <div id="activeSection"></div>
+    <div id="historySection"></div>
+  </div>
+
+  <div class="sync-note">یہ فہرست آپ اور بیگم — دونوں کے فون پر ایک جیسی نظر آئے گی</div>
+
+  <div class="preview-overlay" id="previewOverlay">
+    <button class="preview-close" id="previewClose">✕</button>
+    <div class="preview-screen">
+      <div class="preview-ticker top" id="previewTicker">
+        <div class="preview-ticker-text border-solid" id="previewTickerText"></div>
+      </div>
+      <div class="preview-hint">اسی طرح یہ اگلے فون کی سکرین پر بھی نظر آئے گا</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'ghar-parchi-notes';
+const THEMES = [
+  {name:'برص', board:'#1F2E2B', brass:'#C9A227', paper:'#FBF6EC', ink:'#3B2A2E'},
+  {name:'سبزی', board:'#1E3323', brass:'#8FB996', paper:'#F6F7EE', ink:'#28331F'},
+  {name:'مہندی', board:'#2B2118', brass:'#D98E4A', paper:'#FBF3E7', ink:'#3A2A1A'},
+  {name:'نیلگوں', board:'#1A2733', brass:'#7FA8C9', paper:'#F1F5F8', ink:'#20303D'},
+];
+
+let notes = [];
+let editingId = null;
+
+function uid(){ return 'n' + Date.now() + Math.random().toString(36).slice(2,7); }
+
+async function loadNotes(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    notes = res ? JSON.parse(res.value) : [];
+  }catch(e){
+    notes = [];
+  }
+  render();
+}
+
+async function saveNotes(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(notes), true);
+  }catch(e){
+    console.error('محفوظ کرنے میں مسئلہ ہوا', e);
+  }
+}
+
+function freqLabel(f){
+  return {once:'ایک بار', '30min':'ہر آدھا گھنٹہ', '60min':'ہر گھنٹہ', daily:'روزانہ'}[f] || f;
+}
+
+function render(){
+  const active = notes.filter(n=>!n.done);
+  const done = notes.filter(n=>n.done);
+
+  const activeSection = document.getElementById('activeSection');
+  const historySection = document.getElementById('historySection');
+
+  activeSection.innerHTML = '<h2>چلنے والے پیغامات</h2>';
+  if(active.length===0){
+    activeSection.innerHTML += '<div class="empty-note">ابھی کوئی پیغام شامل نہیں کیا گیا</div>';
+  } else {
+    active.forEach(n=>{
+      activeSection.appendChild(buildItem(n));
+    });
+  }
+
+  historySection.innerHTML = '';
+  if(done.length){
+    historySection.innerHTML = '<h2>مکمل شدہ</h2>';
+    done.forEach(n=>{
+      historySection.appendChild(buildItem(n));
+    });
+  }
+
+  updateTicker();
+}
+
+function buildItem(n){
+  const div = document.createElement('div');
+  div.className = 'item' + (n.done ? ' done' : '');
+  div.innerHTML = `
+    <div class="check">${n.done?'✓':''}</div>
+    <div class="item-body">
+      <div class="item-text">${escapeHtml(n.text)}</div>
+      <div class="item-meta">${n.time ? 'وقت: '+n.time+' · ' : ''}${freqLabel(n.freq)}</div>
+    </div>
+    <div class="item-actions">
+      <button class="edit" title="ایڈٹ">✎</button>
+      <button class="del" title="ڈیلیٹ">✕</button>
+    </div>
+  `;
+  div.querySelector('.check').onclick = ()=>toggleDone(n.id);
+  div.querySelector('.edit').onclick = ()=>editNote(n.id);
+  div.querySelector('.del').onclick = ()=>deleteNote(n.id);
+  return div;
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function toggleDone(id){
+  const n = notes.find(x=>x.id===id);
+  if(n){ n.done = !n.done; await saveNotes(); render(); }
+}
+
+async function deleteNote(id){
+  notes = notes.filter(x=>x.id!==id);
+  await saveNotes(); render();
+}
+
+function editNote(id){
+  const n = notes.find(x=>x.id===id);
+  if(!n) return;
+  editingId = id;
+  document.getElementById('noteText').value = n.text;
+  document.getElementById('noteTime').value = n.time || '';
+  document.getElementById('noteFreq').value = n.freq || 'once';
+  document.getElementById('addBtn').textContent = 'محفوظ کریں (ایڈٹ)';
+  document.getElementById('noteText').focus();
+}
+
+async function addOrSaveNote(){
+  const text = document.getElementById('noteText').value.trim();
+  if(!text) return;
+  const time = document.getElementById('noteTime').value;
+  const freq = document.getElementById('noteFreq').value;
+
+  if(editingId){
+    const n = notes.find(x=>x.id===editingId);
+    if(n){ n.text=text; n.time=time; n.freq=freq; }
+    editingId = null;
+    document.getElementById('addBtn').textContent = 'شامل کریں';
+  } else {
+    notes.unshift({id:uid(), text, time, freq, done:false});
+  }
+  document.getElementById('noteText').value = '';
+  document.getElementById('noteTime').value = '';
+  await saveNotes();
+  render();
+}
+
+let currentTickerText = '';
+function updateTicker(){
+  const active = notes.filter(n=>!n.done);
+  const combined = active.map(n=>n.text).join('   •   ');
+  const track = document.getElementById('tickerTrack');
+  if(!combined){
+    track.classList.add('empty');
+    track.innerHTML = '<div class="ticker-placeholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>';
+    return;
+  }
+  track.classList.remove('empty');
+  if(combined !== currentTickerText || !track.querySelector('.ticker-text')){
+    currentTickerText = combined;
+    const speed = document.getElementById('speedSelect').value;
+    track.innerHTML = `<div class="ticker-text" style="animation-duration:${speed}s;">${escapeHtml(combined)}</div>`;
+  }
+}
+
+// لکھتے ہی فوری طور پر اسی وقت ٹکر پر دکھائیں (محفوظ کرنے سے پہلے کا پیش منظر)
+function showDraftOnTicker(text){
+  const track = document.getElementById('tickerTrack');
+  track.classList.remove('empty');
+  const speed = document.getElementById('speedSelect').value;
+  track.innerHTML = `<div class="ticker-text" style="animation-duration:${speed}s;">${escapeHtml(text)}</div>`;
+  currentTickerText = '__draft__'; // اصل فہرست پر واپس آتے ہی دوبارہ بننا یقینی بنائیں
+}
+
+// settings panel
+document.getElementById('settingsToggle').onclick = ()=>{
+  document.getElementById('settingsPanel').classList.toggle('open');
+};
+
+const colorRow = document.getElementById('colorRow');
+THEMES.forEach((t,i)=>{
+  const sw = document.createElement('div');
+  sw.className = 'swatch' + (i===0?' active':'');
+  sw.style.background = t.board;
+  sw.title = t.name;
+  sw.onclick = ()=>{
+    document.documentElement.style.setProperty('--board', t.board);
+    document.documentElement.style.setProperty('--brass', t.brass);
+    document.documentElement.style.setProperty('--paper', t.paper);
+    document.documentElement.style.setProperty('--ink', t.ink);
+    [...colorRow.children].forEach(c=>c.classList.remove('active'));
+    sw.classList.add('active');
+  };
+  colorRow.appendChild(sw);
+});
+
+document.getElementById('fontSelect').onchange = (e)=>{
+  const fam = e.target.value;
+  document.documentElement.style.setProperty('--content-font', `'${fam}', serif`);
+  // پریویو کھلا ہو تو اسے بھی فوراً اسی فونٹ میں دکھائیں
+  const previewText = document.getElementById('previewTickerText');
+  if(previewText) previewText.style.fontFamily = `'${fam}', serif`;
+  currentTickerText = ''; // ٹکر کو دوبارہ بنا کر نیا فونٹ لاگو کریں
+  updateTicker();
+};
+
+document.getElementById('speedSelect').onchange = ()=>{ currentTickerText=''; updateTicker(); };
+
+document.getElementById('addBtn').onclick = addOrSaveNote;
+document.getElementById('testBtn').onclick = ()=>{ currentTickerText=''; updateTicker(); };
+
+// ===== Position picker =====
+let tickerPos = 'top';
+document.querySelectorAll('.pos-slot').forEach(slot=>{
+  slot.onclick = ()=>{
+    document.querySelectorAll('.pos-slot').forEach(s=>s.classList.remove('active'));
+    slot.classList.add('active');
+    tickerPos = slot.dataset.pos;
+    syncPreviewStyle();
+  };
+});
+
+// ===== Colors + border =====
+const tickerBgInput = document.getElementById('tickerBg');
+const tickerFgInput = document.getElementById('tickerFg');
+const borderSelect = document.getElementById('borderSelect');
+[tickerBgInput, tickerFgInput, borderSelect].forEach(el=>{
+  el.addEventListener('input', syncPreviewStyle);
+});
+
+function syncPreviewStyle(){
+  const bg = tickerBgInput.value;
+  const fg = tickerFgInput.value;
+  const borderClass = borderSelect.value;
+
+  // live board colors
+  document.documentElement.style.setProperty('--board', bg);
+  document.documentElement.style.setProperty('--board-ink', fg);
+
+  const pTicker = document.getElementById('previewTicker');
+  pTicker.className = 'preview-ticker ' + tickerPos;
+  pTicker.style.background = bg;
+
+  const pText = document.getElementById('previewTickerText');
+  pText.className = 'preview-ticker-text ' + borderClass;
+  pText.style.color = fg;
+  pText.style.borderColor = fg;
+}
+
+// ===== Live full-screen preview =====
+const previewOverlay = document.getElementById('previewOverlay');
+function updatePreviewText(){
+  const text = document.getElementById('noteText').value.trim() || 'یہاں آپ کا پیغام اسی طرح چلتا نظر آئے گا';
+  document.getElementById('previewTickerText').textContent = text;
+}
+document.getElementById('previewBtn').onclick = ()=>{
+  updatePreviewText();
+  syncPreviewStyle();
+  previewOverlay.classList.add('open');
+};
+document.getElementById('previewClose').onclick = ()=>{
+  previewOverlay.classList.remove('open');
+};
+document.getElementById('noteText').addEventListener('input', (e)=>{
+  if(previewOverlay.classList.contains('open')) updatePreviewText();
+
+  // اوپر والے بورڈ ٹکر پر بھی فوری طور پر لائیو دکھائیں
+  const draft = e.target.value.trim();
+  if(draft){
+    showDraftOnTicker(draft);
+  } else {
+    currentTickerText = '';
+    updateTicker(); // خالی کریں تو اصل شیڈول شدہ فہرست واپس دکھائیں
+  }
+});
+
+syncPreviewStyle();
+loadNotes();
+
+// ===== Offline support (PWA) =====
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html>
