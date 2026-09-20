@@ -438,6 +438,10 @@
         <input type="checkbox" id="dragEnable">
       </div>
     </div>
+    <div class="srow">
+      <span class="slabel" style="font-size:11px;color:#8b8578;">سنک حالت (ڈیبگ)</span>
+      <div class="scontrol"><span id="syncDebug" style="font-size:11px;color:#8b8578;">—</span></div>
+    </div>
   </div>
 
   <div class="addform" id="addForm">
@@ -553,10 +557,14 @@ async function pushNotesToCloud(){
     setSyncStatus('ok');
   }catch(e){ setSyncStatus('offline'); }
 }
+function debugSync(msg){
+  const el = document.getElementById('syncDebug');
+  if(el) el.textContent = msg;
+}
 async function pushSettingsToCloud(s){
   try{
     const now = Date.now();
-    await authFirestoreFetch(`${NOTES_DOC}?key=${FIREBASE_API_KEY}&updateMask.fieldPaths=settingsJson&updateMask.fieldPaths=settingsUpdatedAt`, {
+    const res = await authFirestoreFetch(`${NOTES_DOC}?key=${FIREBASE_API_KEY}&updateMask.fieldPaths=settingsJson&updateMask.fieldPaths=settingsUpdatedAt`, {
       method:'PATCH',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ fields:{
@@ -564,10 +572,16 @@ async function pushSettingsToCloud(s){
         settingsUpdatedAt:{ integerValue: String(now) }
       }})
     });
+    if(!res.ok){
+      const errText = await res.text();
+      debugSync('بھیجنے میں خرابی: ' + res.status + ' ' + errText.slice(0,80));
+      return;
+    }
     const meta = getCloudMeta();
     meta.settingsUpdatedAt = now;
     setCloudMeta(meta);
-  }catch(e){ /* آف لائن — کوئی مسئلہ نہیں */ }
+    debugSync('بھیجی گئی ' + new Date(now).toLocaleTimeString('ur-PK'));
+  }catch(e){ debugSync('بھیجنے میں ناکام: ' + (e && e.message ? e.message : e)); }
 }
 async function pullNotesFromCloud(applyIfNewer){
   try{
@@ -592,14 +606,17 @@ async function pullNotesFromCloud(applyIfNewer){
       try{
         const cloudSettings = JSON.parse(f.settingsJson.stringValue);
         saveSettings(cloudSettings);
+        applyingFromCloud = true;
         applySettingsObj(cloudSettings);
+        applyingFromCloud = false;
         local.settingsUpdatedAt = cloudSettingsAt;
-      }catch(e){}
+        debugSync('وصول کی گئی ' + new Date().toLocaleTimeString('ur-PK'));
+      }catch(e){ applyingFromCloud = false; }
     }
 
     setCloudMeta(local);
     setSyncStatus('ok');
-  }catch(e){ setSyncStatus('offline'); }
+  }catch(e){ setSyncStatus('offline'); debugSync('چیک ناکام: ' + (e && e.message ? e.message : e)); }
 }
 function setSyncStatus(state){
   const el = document.getElementById('syncNote');
@@ -626,6 +643,7 @@ const DAYS = [
 let notes = [];
 let editingId = null;
 let selectedDays = [];
+let applyingFromCloud = false; // true جب سیٹنگز آن لائن سے لگ رہی ہوں — تاکہ اسی وقت دوبارہ اپ لوڈ نہ ہو
 let tickerSpeed = 14; // سیکنڈز — کم نمبر = تیز رفتار، زیادہ نمبر = آہستہ
 const SPEED_MIN = 3, SPEED_MAX = 60;
 function updateSpeedDisplay(){
@@ -1016,7 +1034,7 @@ THEMES.forEach((t,i)=>{
     document.documentElement.style.setProperty('--board-ink', t.brass);
     colorRow.querySelectorAll('.swatch').forEach(c=>c.classList.remove('active'));
     sw.classList.add('active');
-    persistSettings();
+    if(!applyingFromCloud) persistSettings();
   };
   sw.onclick = pick;
   item.onclick = pick;
