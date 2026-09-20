@@ -101,12 +101,22 @@
     font-family:var(--content-font);
     color:var(--board-ink);
     animation:scroll-rtl linear infinite;
-    transform:translateY(-50%) translateX(100%);
+    transform:translateY(-50%) translateX(-100%);
   }
   .ticker-track.paused .ticker-text{ animation-play-state:paused; }
   @keyframes scroll-rtl{
-    from{ transform:translateY(-50%) translateX(100%); }
-    to{ transform:translateY(-50%) translateX(-100%); }
+    from{ transform:translateY(-50%) translateX(-100%); }
+    to{ transform:translateY(-50%) translateX(100%); }
+  }
+  /* ===== پٹی صرف موڈ — باقی پورا ایپ چھپا رہتا ہے، صرف پٹی نظر آتی ہے ===== */
+  body.compact .app{ display:none; }
+  .board-gear{
+    position:absolute;
+    top:6px; left:8px;
+    background:none; border:none;
+    color:var(--board-ink); opacity:.5;
+    font-size:14px; cursor:pointer; padding:4px;
+    z-index:510;
   }
   .ticker-placeholder{
     text-align:center;
@@ -277,9 +287,10 @@
   }
 </style>
 </head>
-<body>
+<body class="compact">
 
 <div class="board" id="board">
+  <button class="board-gear" id="boardGear" title="پیغامات / سیٹنگز">⚙</button>
   <div class="ticker-track" id="tickerTrack">
     <div class="ticker-placeholder" id="tickerPlaceholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>
   </div>
@@ -297,7 +308,10 @@
 
   <div class="headrow">
     <h1>توجہ فرمائیں</h1>
-    <button class="icon-btn" id="settingsToggle" title="سیٹنگز">⚙︎</button>
+    <div>
+      <button class="icon-btn" id="settingsToggle" title="سیٹنگز">⚙︎</button>
+      <button class="icon-btn" id="closeAppBtn" title="صرف پٹی دکھائیں">✕</button>
+    </div>
   </div>
 
   <div class="settings" id="settingsPanel">
@@ -312,13 +326,11 @@
         <option value="Nafees Naskh">نفیس نسخ</option>
       </select>
     </div>
-    <h3>سکرول کی رفتار</h3>
+    <h3>سکرول کی رفتار (— دبائیں تو تیز، + دبائیں تو آہستہ)</h3>
     <div class="row">
-      <select id="speedSelect">
-        <option value="22">آہستہ</option>
-        <option value="14" selected>درمیانہ</option>
-        <option value="8">تیز</option>
-      </select>
+      <button type="button" class="btn btn-ghost" id="speedMinus" style="padding:6px 14px;">−</button>
+      <span id="speedValue" style="min-width:70px;text-align:center;font-family:var(--ui-font);font-size:14px;">14 سیکنڈ</span>
+      <button type="button" class="btn btn-ghost" id="speedPlus" style="padding:6px 14px;">+</button>
     </div>
     <h3>لکھائی کا سائز</h3>
     <div class="row">
@@ -333,8 +345,16 @@
       <input type="color" id="tickerBg" value="#1F2E2B">
       <input type="color" id="tickerFg" value="#F3E9C9">
     </div>
+    <h3>پیغامات کے درمیان فاصلہ</h3>
+    <div class="row">
+      <select id="gapSelect">
+        <option value="compact">کم</option>
+        <option value="normal" selected>درمیانہ</option>
+        <option value="wide">زیادہ</option>
+      </select>
+    </div>
     <div style="font-size:11px;color:#9b9484;margin-top:4px;">
-      پٹی ہمیشہ سکرین کے بالکل اوپر چلتی ہے — ٹی وی نیوز پٹی کی طرح۔
+      پٹی ہمیشہ سکرین کے بالکل اوپر چلتی ہے — ٹی وی نیوز پٹی کی طرح۔ پیغام شامل/ایڈٹ کرنے کے بعد یہ خودکار واپس صرف پٹی کی شکل میں آ جائے گی۔
     </div>
   </div>
 
@@ -491,6 +511,12 @@ const DAYS = [
 let notes = [];
 let editingId = null;
 let selectedDays = [];
+let tickerSpeed = 14; // سیکنڈز — کم نمبر = تیز رفتار، زیادہ نمبر = آہستہ
+const SPEED_MIN = 3, SPEED_MAX = 60;
+function updateSpeedDisplay(){
+  const el = document.getElementById('speedValue');
+  if(el) el.textContent = tickerSpeed + ' سیکنڈ';
+}
 
 function uid(){ return 'n' + Date.now() + Math.random().toString(36).slice(2,7); }
 
@@ -523,10 +549,11 @@ function currentSettings(){
   return {
     theme: document.querySelector('.swatch.active')?.dataset.i ?? '0',
     font: document.getElementById('fontSelect').value,
-    speed: document.getElementById('speedSelect').value,
+    speed: tickerSpeed,
     size: document.getElementById('sizeSelect').value,
     bg: document.getElementById('tickerBg').value,
     fg: document.getElementById('tickerFg').value,
+    gap: document.getElementById('gapSelect').value,
   };
 }
 
@@ -625,6 +652,7 @@ function editNote(id){
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
   document.getElementById('addForm').classList.add('highlight');
   closePop();
+  document.body.classList.remove('compact');
   document.getElementById('noteText').focus();
   document.getElementById('addForm').scrollIntoView({behavior:'smooth', block:'center'});
 }
@@ -659,6 +687,7 @@ function addOrSaveNote(){
   resetForm();
   saveNotes();
   render();
+  document.body.classList.add('compact');
 }
 
 /* ===== دنوں کے چپس ===== */
@@ -684,7 +713,10 @@ function updateTicker(){
   const track = document.getElementById('tickerTrack');
   if(track.classList.contains('paused')) return; // پاپ اوور کھلا ہو تو مت چھیڑیں
   const live = notes.filter(isActiveNow);
-  const combined = live.map(n=>n.text).join('   •   ');
+  const gapSel = document.getElementById('gapSelect');
+  const gapMap = { compact:'  •  ', normal:'   •   ', wide:'        •        ' };
+  const sep = gapMap[gapSel ? gapSel.value : 'normal'] || gapMap.normal;
+  const combined = live.map(n=>n.text).join(sep);
   if(!combined){
     track.classList.add('empty');
     track.innerHTML = '<div class="ticker-placeholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>';
@@ -694,8 +726,7 @@ function updateTicker(){
   track.classList.remove('empty');
   if(combined !== currentTickerText || !track.querySelector('.ticker-text')){
     currentTickerText = combined;
-    const speed = document.getElementById('speedSelect').value;
-    track.innerHTML = `<div class="ticker-text" style="animation-duration:${speed}s;">${escapeHtml(combined)}</div>`;
+    track.innerHTML = `<div class="ticker-text" style="animation-duration:${tickerSpeed}s;">${escapeHtml(combined)}</div>`;
   }
 }
 
@@ -705,8 +736,7 @@ document.getElementById('noteText').addEventListener('input', (e)=>{
   const track = document.getElementById('tickerTrack');
   if(draft){
     track.classList.remove('empty');
-    const speed = document.getElementById('speedSelect').value;
-    track.innerHTML = `<div class="ticker-text" style="animation-duration:${speed}s;">${escapeHtml(draft)}</div>`;
+    track.innerHTML = `<div class="ticker-text" style="animation-duration:${tickerSpeed}s;">${escapeHtml(draft)}</div>`;
     currentTickerText = '__draft__';
   } else {
     currentTickerText = '';
@@ -759,6 +789,7 @@ board.addEventListener('pointerdown', (e)=>{
 document.getElementById('popAddBtn').onclick = ()=>{
   closePop();
   resetForm();
+  document.body.classList.remove('compact');
   document.getElementById('noteText').focus();
   document.getElementById('addForm').scrollIntoView({behavior:'smooth', block:'center'});
 };
@@ -772,6 +803,20 @@ document.addEventListener('click', (e)=>{
 document.getElementById('settingsToggle').onclick = ()=>{
   document.getElementById('settingsPanel').classList.toggle('open');
 };
+document.getElementById('closeAppBtn').onclick = ()=>{
+  document.body.classList.add('compact');
+};
+document.getElementById('boardGear').onclick = ()=>{
+  document.body.classList.remove('compact');
+};
+document.getElementById('cancelEditBtn').addEventListener('click', ()=>{
+  document.body.classList.add('compact');
+});
+document.getElementById('gapSelect').addEventListener('change', ()=>{
+  currentTickerText = '';
+  updateTicker();
+  persistSettings();
+});
 
 const colorRow = document.getElementById('colorRow');
 THEMES.forEach((t,i)=>{
@@ -802,7 +847,16 @@ document.getElementById('fontSelect').onchange = (e)=>{
   updateTicker();
   persistSettings();
 };
-document.getElementById('speedSelect').onchange = ()=>{ currentTickerText=''; updateTicker(); persistSettings(); };
+document.getElementById('speedMinus').onclick = ()=>{
+  tickerSpeed = Math.max(SPEED_MIN, tickerSpeed - 1); // نمبر کم = تیز
+  updateSpeedDisplay();
+  currentTickerText=''; updateTicker(); persistSettings();
+};
+document.getElementById('speedPlus').onclick = ()=>{
+  tickerSpeed = Math.min(SPEED_MAX, tickerSpeed + 1); // نمبر زیادہ = آہستہ
+  updateSpeedDisplay();
+  currentTickerText=''; updateTicker(); persistSettings();
+};
 document.getElementById('sizeSelect').onchange = (e)=>{
   document.documentElement.style.setProperty('--ticker-size', e.target.value + 'px');
   document.documentElement.style.setProperty('--ticker-h', (parseInt(e.target.value) + 28) + 'px');
@@ -832,7 +886,7 @@ function applySettings(){
     colorRow.children[0].classList.add('active');
   }
   if(s.font){ document.getElementById('fontSelect').value = s.font; document.documentElement.style.setProperty('--content-font', `'${s.font}', serif`); }
-  if(s.speed){ document.getElementById('speedSelect').value = s.speed; }
+  if(s.speed){ tickerSpeed = parseInt(s.speed) || 14; updateSpeedDisplay(); }
   if(s.size){
     document.getElementById('sizeSelect').value = s.size;
     document.documentElement.style.setProperty('--ticker-size', s.size + 'px');
@@ -840,6 +894,8 @@ function applySettings(){
   }
   if(s.bg){ document.getElementById('tickerBg').value = s.bg; document.documentElement.style.setProperty('--board', s.bg); }
   if(s.fg){ document.getElementById('tickerFg').value = s.fg; document.documentElement.style.setProperty('--board-ink', s.fg); }
+  if(s.gap){ document.getElementById('gapSelect').value = s.gap; }
+  updateSpeedDisplay();
 }
 
 renderDayChips();
