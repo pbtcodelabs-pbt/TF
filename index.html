@@ -329,6 +329,7 @@
 
 <div class="board" id="board">
   <button class="board-gear" id="boardGear" title="پیغامات / سیٹنگز">⚙</button>
+  <span id="syncDebugTop" style="position:absolute; top:7px; right:8px; font-size:9px; color:var(--board-ink); opacity:.55; z-index:511; font-family:var(--ui-font); direction:ltr;">—</span>
   <div class="ticker-track" id="tickerTrack">
     <div class="ticker-placeholder" id="tickerPlaceholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>
   </div>
@@ -560,6 +561,8 @@ async function pushNotesToCloud(){
 function debugSync(msg){
   const el = document.getElementById('syncDebug');
   if(el) el.textContent = msg;
+  const top = document.getElementById('syncDebugTop');
+  if(top) top.textContent = msg;
 }
 async function pushSettingsToCloud(s){
   try{
