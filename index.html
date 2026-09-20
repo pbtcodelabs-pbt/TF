@@ -70,11 +70,14 @@
   .board{
     position:fixed;
     top:0; left:50%; transform:translateX(-50%);
-    width:100%; max-width:480px;
+    transition:none;
+    max-width:480px;
     background:var(--board);
     color:var(--board-ink);
     z-index:500;
-    border-bottom:4px solid var(--brass);
+    width:var(--board-w,100%);
+    border-top:var(--border-top-w,0px) solid var(--border-top-color,#C9A227);
+    border-bottom:var(--border-bottom-w,4px) solid var(--border-bottom-color,#C9A227);
     padding-top:env(safe-area-inset-top);
     touch-action:pan-y;
     -webkit-user-select:none; user-select:none;
@@ -353,6 +356,30 @@
         <option value="wide">زیادہ</option>
       </select>
     </div>
+    <h3>اوپر والا بارڈر</h3>
+    <div class="row">
+      <label class="cont-check"><input type="checkbox" id="borderTopOn"> فعال کریں</label>
+      <input type="color" id="borderTopColor" value="#C9A227">
+    </div>
+    <h3>نیچے والا بارڈر</h3>
+    <div class="row">
+      <label class="cont-check"><input type="checkbox" id="borderBottomOn" checked> فعال کریں</label>
+      <input type="color" id="borderBottomColor" value="#C9A227">
+    </div>
+    <h3>پٹی کی چوڑائی (— کم، + زیادہ)</h3>
+    <div class="row">
+      <button type="button" class="btn btn-ghost" id="widthMinus" style="padding:6px 14px;">−</button>
+      <span id="widthValue" style="min-width:60px;text-align:center;font-family:var(--ui-font);font-size:14px;">100%</span>
+      <button type="button" class="btn btn-ghost" id="widthPlus" style="padding:6px 14px;">+</button>
+    </div>
+    <h3>پٹی کی جگہ (پوزیشن)</h3>
+    <div class="row">
+      <button type="button" class="btn btn-ghost" id="posTopBtn">سب سے اوپر</button>
+      <button type="button" class="btn btn-ghost" id="posBottomBtn">سب سے نیچے</button>
+    </div>
+    <div class="row">
+      <label class="cont-check"><input type="checkbox" id="dragEnable"> انگلی سے پکڑ کر جگہ بدلیں — چھوڑتے ہی وہیں لاک ہو جائے گی</label>
+    </div>
     <div style="font-size:11px;color:#9b9484;margin-top:4px;">
       پٹی ہمیشہ سکرین کے بالکل اوپر چلتی ہے — ٹی وی نیوز پٹی کی طرح۔ پیغام شامل/ایڈٹ کرنے کے بعد یہ خودکار واپس صرف پٹی کی شکل میں آ جائے گی۔
     </div>
@@ -517,6 +544,13 @@ function updateSpeedDisplay(){
   const el = document.getElementById('speedValue');
   if(el) el.textContent = tickerSpeed + ' سیکنڈ';
 }
+let boardWidthPct = 100; // فیصد — پٹی کی چوڑائی
+const WIDTH_MIN = 40, WIDTH_MAX = 100;
+function updateWidthDisplay(){
+  const el = document.getElementById('widthValue');
+  if(el) el.textContent = boardWidthPct + '%';
+  document.documentElement.style.setProperty('--board-w', boardWidthPct + '%');
+}
 
 function uid(){ return 'n' + Date.now() + Math.random().toString(36).slice(2,7); }
 
@@ -554,6 +588,12 @@ function currentSettings(){
     bg: document.getElementById('tickerBg').value,
     fg: document.getElementById('tickerFg').value,
     gap: document.getElementById('gapSelect').value,
+    borderTopOn: document.getElementById('borderTopOn').checked,
+    borderTopColor: document.getElementById('borderTopColor').value,
+    borderBottomOn: document.getElementById('borderBottomOn').checked,
+    borderBottomColor: document.getElementById('borderBottomColor').value,
+    posTop: boardTop,
+    widthPct: boardWidthPct,
   };
 }
 
@@ -780,11 +820,39 @@ function renderPop(){
     });
   }
 }
+/* ===== پٹی کو انگلی سے پکڑ کر جگہ بدلنا، چھوڑتے ہی وہیں لاک ===== */
+let boardTop = 0;
+function setBoardTop(px){
+  const maxTop = Math.max(0, window.innerHeight - board.offsetHeight);
+  boardTop = Math.min(Math.max(0, px), maxTop);
+  board.style.top = boardTop + 'px';
+}
+let dragging = false, dragStartY = 0, dragStartTop = 0;
+const dragEnableCk = document.getElementById('dragEnable');
+document.getElementById('posTopBtn').onclick = ()=>{ setBoardTop(0); persistSettings(); };
+document.getElementById('posBottomBtn').onclick = ()=>{
+  setBoardTop(window.innerHeight - board.offsetHeight);
+  persistSettings();
+};
+
 board.addEventListener('pointerdown', (e)=>{
-  pressTimer = setTimeout(openPop, 450);
+  if(dragEnableCk.checked){
+    dragging = true;
+    dragStartY = e.clientY;
+    dragStartTop = boardTop;
+    try{ board.setPointerCapture(e.pointerId); }catch(err){}
+  } else {
+    pressTimer = setTimeout(openPop, 450);
+  }
+});
+board.addEventListener('pointermove', (e)=>{
+  if(dragging){ setBoardTop(dragStartTop + (e.clientY - dragStartY)); }
 });
 ['pointerup','pointerleave','pointercancel'].forEach(evt=>{
-  board.addEventListener(evt, ()=>{ clearTimeout(pressTimer); });
+  board.addEventListener(evt, ()=>{
+    clearTimeout(pressTimer);
+    if(dragging){ dragging = false; persistSettings(); } // چھوڑتے ہی یہیں لاک ہو گئی
+  });
 });
 document.getElementById('popAddBtn').onclick = ()=>{
   closePop();
@@ -816,6 +884,10 @@ document.getElementById('gapSelect').addEventListener('change', ()=>{
   currentTickerText = '';
   updateTicker();
   persistSettings();
+});
+['borderTopOn','borderTopColor','borderBottomOn','borderBottomColor'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{ applyBorders(); persistSettings(); });
+  document.getElementById(id).addEventListener('change', ()=>{ applyBorders(); persistSettings(); });
 });
 
 const colorRow = document.getElementById('colorRow');
@@ -857,6 +929,17 @@ document.getElementById('speedPlus').onclick = ()=>{
   updateSpeedDisplay();
   currentTickerText=''; updateTicker(); persistSettings();
 };
+document.getElementById('widthMinus').onclick = ()=>{
+  boardWidthPct = Math.max(WIDTH_MIN, boardWidthPct - 5);
+  updateWidthDisplay();
+  setTimeout(()=>setBoardTop(boardTop), 0); // دوبارہ حد میں رکھیں
+  persistSettings();
+};
+document.getElementById('widthPlus').onclick = ()=>{
+  boardWidthPct = Math.min(WIDTH_MAX, boardWidthPct + 5);
+  updateWidthDisplay();
+  persistSettings();
+};
 document.getElementById('sizeSelect').onchange = (e)=>{
   document.documentElement.style.setProperty('--ticker-size', e.target.value + 'px');
   document.documentElement.style.setProperty('--ticker-h', (parseInt(e.target.value) + 28) + 'px');
@@ -895,7 +978,23 @@ function applySettings(){
   if(s.bg){ document.getElementById('tickerBg').value = s.bg; document.documentElement.style.setProperty('--board', s.bg); }
   if(s.fg){ document.getElementById('tickerFg').value = s.fg; document.documentElement.style.setProperty('--board-ink', s.fg); }
   if(s.gap){ document.getElementById('gapSelect').value = s.gap; }
+  if(s.borderTopColor){ document.getElementById('borderTopColor').value = s.borderTopColor; }
+  if(s.borderBottomColor){ document.getElementById('borderBottomColor').value = s.borderBottomColor; }
+  document.getElementById('borderTopOn').checked = !!s.borderTopOn;
+  document.getElementById('borderBottomOn').checked = (s.borderBottomOn !== undefined) ? !!s.borderBottomOn : true;
+  applyBorders();
   updateSpeedDisplay();
+  if(s.widthPct){ boardWidthPct = parseInt(s.widthPct) || 100; }
+  updateWidthDisplay();
+  if(s.posTop !== undefined){ setBoardTop(s.posTop); }
+}
+function applyBorders(){
+  const topOn = document.getElementById('borderTopOn').checked;
+  const botOn = document.getElementById('borderBottomOn').checked;
+  document.documentElement.style.setProperty('--border-top-w', topOn ? '4px' : '0px');
+  document.documentElement.style.setProperty('--border-top-color', document.getElementById('borderTopColor').value);
+  document.documentElement.style.setProperty('--border-bottom-w', botOn ? '4px' : '0px');
+  document.documentElement.style.setProperty('--border-bottom-color', document.getElementById('borderBottomColor').value);
 }
 
 renderDayChips();
