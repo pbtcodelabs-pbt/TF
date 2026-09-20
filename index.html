@@ -2,7 +2,7 @@
 <html lang="ur" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>توجہ فرمائیں</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1F2E2B">
@@ -46,76 +46,56 @@
     --radius:14px;
     --ui-font:'Nafees Naskh', serif;
     --content-font:'Jameel Noori Nastaleeq', serif;
+    --ticker-size:24px;
+    --ticker-h:52px;
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{ margin:0; padding:0; background:#DCD3BE; }
   body{
-    margin:0;
-    background:#DCD3BE;
     font-family:var(--ui-font);
-    display:flex;
-    justify-content:center;
-    padding:24px 10px;
     min-height:100vh;
+    color:var(--ink);
   }
-  .phone{
-    width:390px;
-    max-width:100%;
+  .app{
+    max-width:480px;
+    margin:0 auto;
     background:var(--paper);
-    border-radius:32px;
-    box-shadow:0 20px 50px rgba(0,0,0,.25);
-    overflow:hidden;
-    border:6px solid #2b2320;
+    min-height:100vh;
     display:flex;
     flex-direction:column;
-    min-height:760px;
+    box-shadow:0 0 30px rgba(0,0,0,.12);
   }
 
-  /* ===== Ticker board ===== */
+  /* ===== Ticker board — همیشہ سکرین کے بالکل اوپر چپکی رہتی ہے (TV پٹی کی طرح) ===== */
   .board{
+    position:fixed;
+    top:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px;
     background:var(--board);
     color:var(--board-ink);
-    padding:14px 0;
-    position:relative;
-    overflow:hidden;
+    z-index:500;
     border-bottom:4px solid var(--brass);
-  }
-  .board::before{
-    content:"";
-    position:absolute; top:8px; right:14px;
-    width:10px; height:10px; border-radius:50%;
-    background:var(--brass);
-    box-shadow:0 2px 4px rgba(0,0,0,.4);
-  }
-  .board::after{
-    content:"";
-    position:absolute; top:8px; left:14px;
-    width:10px; height:10px; border-radius:50%;
-    background:var(--brass);
-    box-shadow:0 2px 4px rgba(0,0,0,.4);
-  }
-  .board-label{
-    text-align:center;
-    font-size:11px;
-    letter-spacing:1px;
-    color:var(--brass);
-    margin-bottom:6px;
-    font-family:var(--ui-font);
+    padding-top:env(safe-area-inset-top);
+    touch-action:pan-y;
   }
   .ticker-track{
     width:100%;
     overflow:hidden;
-    height:46px;
+    height:var(--ticker-h);
     display:flex;
     align-items:center;
+    position:relative;
+    cursor:pointer;
   }
-  .ticker-track.empty{ height:32px; }
+  .ticker-track.empty{ height:38px; }
   .ticker-text{
     white-space:nowrap;
     padding-inline-start:100%;
-    font-size:26px;
+    font-size:var(--ticker-size);
     font-family:var(--content-font);
     animation:scroll-rtl linear infinite;
   }
+  .ticker-track.paused .ticker-text{ animation-play-state:paused; }
   @keyframes scroll-rtl{
     from{ transform:translateX(0); }
     to{ transform:translateX(-200%); }
@@ -123,10 +103,54 @@
   .ticker-placeholder{
     text-align:center;
     width:100%;
-    font-size:14px;
-    color:#8b8578;
+    font-size:13px;
+    color:#a49d86;
     font-family:var(--ui-font);
   }
+  .ticker-hold-hint{
+    text-align:center;
+    font-size:10px;
+    color:rgba(243,233,201,.55);
+    padding-bottom:4px;
+    font-family:var(--ui-font);
+  }
+
+  /* spacer so page content starts below the fixed ticker */
+  .board-spacer{ height:calc(var(--ticker-h) + 22px); }
+
+  /* ===== Ticker long-press popover ===== */
+  .ticker-pop{
+    display:none;
+    position:fixed;
+    top:calc(var(--ticker-h) + 6px);
+    left:50%; transform:translateX(-50%);
+    width:92%; max-width:440px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:0 12px 30px rgba(0,0,0,.28);
+    z-index:600;
+    padding:10px;
+    max-height:60vh;
+    overflow-y:auto;
+  }
+  .ticker-pop.open{ display:block; }
+  .ticker-pop h4{ margin:2px 4px 8px; font-size:12px; color:#9b9484; font-family:var(--ui-font); font-weight:600;}
+  .pop-item{
+    display:flex; align-items:center; gap:8px;
+    padding:8px 6px; border-bottom:1px solid var(--line);
+  }
+  .pop-item:last-child{ border-bottom:none; }
+  .pop-item .txt{ flex:1; font-family:var(--content-font); font-size:16px; color:var(--ink); }
+  .pop-item button{ border:none; background:none; font-size:16px; cursor:pointer; color:#a89f8a; padding:4px;}
+  .pop-item .edit:hover{ color:var(--brass); }
+  .pop-item .del:hover{ color:var(--danger); }
+  .pop-add{
+    width:100%; margin-top:6px;
+    background:var(--brass); color:#2b2320; border:none; border-radius:10px;
+    padding:9px; font-family:var(--ui-font); font-size:14px; font-weight:700; cursor:pointer;
+  }
+  .pop-empty{ text-align:center; color:#a89f8a; font-size:12px; padding:10px 0; }
 
   /* ===== Header row ===== */
   .headrow{
@@ -168,8 +192,9 @@
   .addform{
     padding:14px 16px;
     border-bottom:1px solid var(--line);
-    display:flex; flex-direction:column; gap:8px;
+    display:flex; flex-direction:column; gap:9px;
   }
+  .addform.highlight{ background:#FBF3D9; }
   .addform textarea{
     font-family:var(--content-font);
     font-size:18px;
@@ -181,8 +206,18 @@
     background:#fff;
     color:var(--ink);
   }
+  .addform-label{ font-size:12px; color:#8b8578; font-family:var(--ui-font); }
+  .days-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .day-chip{
+    padding:6px 10px; border-radius:20px; border:1px solid var(--line); background:#fff;
+    font-family:var(--ui-font); font-size:12px; cursor:pointer; color:var(--ink);
+  }
+  .day-chip.active{ background:var(--sabzi); border-color:var(--sabzi); color:#fff; }
+  .time-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .time-row input[type=time]{ flex:1; min-width:110px; }
+  .cont-check{ display:flex; align-items:center; gap:6px; font-size:13px; }
   .addform-row{ display:flex; gap:8px; }
-  .addform-row select, .addform-row input{ flex:1; }
+  .addform-row .btn{ flex:1; }
   .btn{
     border:none; border-radius:10px; padding:9px 14px; cursor:pointer;
     font-family:var(--ui-font); font-size:14px; font-weight:600;
@@ -191,7 +226,7 @@
   .btn-ghost{ background:transparent; color:var(--ink); border:1px solid var(--line); }
 
   /* ===== List ===== */
-  .list{ padding:10px 16px; flex:1; overflow-y:auto; }
+  .list{ padding:10px 16px; flex:1; }
   .list h2{ font-size:13px; color:#8b8578; margin:10px 0 6px; font-family:var(--ui-font); font-weight:600;}
   .item{
     display:flex; align-items:flex-start; gap:10px;
@@ -202,6 +237,7 @@
     margin-bottom:8px;
   }
   .item.done{ opacity:.55; }
+  .item.live{ border-color:var(--sabzi); }
   .item .check{
     width:22px;height:22px;border-radius:50%;
     border:2px solid var(--sabzi);
@@ -219,6 +255,7 @@
   .item-meta{
     font-size:11px; color:#9b9484; margin-top:3px; font-family:var(--ui-font);
   }
+  .item-meta.live-tag{ color:var(--sabzi); font-weight:700; }
   .item-actions{ display:flex; gap:6px; flex-shrink:0; }
   .item-actions button{
     border:none; background:none; cursor:pointer; font-size:15px; color:#a89f8a; padding:2px;
@@ -228,73 +265,27 @@
     text-align:center; color:#a89f8a; font-size:13px; padding:20px 0; font-family:var(--ui-font);
   }
   .sync-note{
-    font-size:11px; text-align:center; color:#a89f8a; padding:6px 16px 12px; font-family:var(--ui-font);
+    font-size:11px; text-align:center; color:#a89f8a; padding:6px 16px 18px; font-family:var(--ui-font);
   }
-
-  /* ===== Position picker ===== */
-  .pos-picker{
-    display:flex; flex-direction:column; gap:6px;
-    background:#20201c; border-radius:12px; padding:8px;
-    height:140px; justify-content:space-between; position:relative;
-  }
-  .pos-slot{
-    flex:1; border-radius:8px; border:2px dashed #4a473d; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    color:#8a8674; font-size:11px; font-family:var(--ui-font);
-  }
-  .pos-slot.active{ border-color:var(--brass); border-style:solid; background:rgba(201,162,39,.15); color:var(--brass); }
-
-  /* ===== Preview overlay ===== */
-  .preview-overlay{
-    display:none;
-    position:absolute; inset:0;
-    background:#000;
-    z-index:50;
-    flex-direction:column;
-  }
-  .preview-overlay.open{ display:flex; }
-  .preview-screen{
-    flex:1; position:relative; background:linear-gradient(180deg,#3a4a5a,#1c2530);
-    display:flex; flex-direction:column;
-  }
-  .preview-ticker{
-    position:absolute; left:0; right:0;
-    padding:10px 0; overflow:hidden;
-    display:flex; align-items:center;
-  }
-  .preview-ticker.top{ top:40px; }
-  .preview-ticker.middle{ top:50%; transform:translateY(-50%); }
-  .preview-ticker.bottom{ bottom:40px; }
-  .preview-ticker-text{
-    white-space:nowrap; font-size:24px; padding-inline-start:100%;
-    animation:scroll-rtl 14s linear infinite;
-  }
-  .preview-close{
-    align-self:flex-end; margin:14px; background:rgba(255,255,255,.15); color:#fff;
-    border:none; border-radius:50%; width:34px;height:34px; font-size:16px; cursor:pointer;
-  }
-  .preview-hint{
-    position:absolute; bottom:16px; left:0; right:0; text-align:center;
-    color:rgba(255,255,255,.55); font-size:12px; font-family:var(--ui-font);
-  }
-
-  /* border styles applied to ticker text wrapper */
-  .border-solid{ border:3px solid; border-radius:6px; padding:4px 16px; }
-  .border-double{ border:4px double; border-radius:4px; padding:4px 16px; }
-  .border-dashed{ border:2px dashed; border-radius:6px; padding:4px 16px; }
-  .border-none{ border:none; padding:4px 16px; }
 </style>
 </head>
 <body>
 
-<div class="phone">
-
-  <div class="board">
-    <div class="board-label">توجہ فرمائیں — چل رہا ہے</div>
-    <div class="ticker-track" id="tickerTrack">
-      <div class="ticker-placeholder" id="tickerPlaceholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>
-    </div>
+<div class="board" id="board">
+  <div class="ticker-track" id="tickerTrack">
+    <div class="ticker-placeholder" id="tickerPlaceholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>
   </div>
+  <div class="ticker-hold-hint">دبا کر رکھیں — ایڈٹ / ڈیلیٹ / نیا شامل کریں</div>
+</div>
+
+<div class="ticker-pop" id="tickerPop">
+  <h4>اس وقت چلنے والے پیغامات</h4>
+  <div id="popList"></div>
+  <button class="pop-add" id="popAddBtn">+ نیا پیغام شامل کریں</button>
+</div>
+
+<div class="app">
+  <div class="board-spacer"></div>
 
   <div class="headrow">
     <h1>توجہ فرمائیں</h1>
@@ -321,52 +312,43 @@
         <option value="8">تیز</option>
       </select>
     </div>
-
-    <h3>ٹکر کی پوزیشن (سکرین پر جگہ)</h3>
-    <div class="pos-picker" id="posPicker">
-      <div class="pos-slot active" data-pos="top">اوپر</div>
-      <div class="pos-slot" data-pos="middle">درمیان</div>
-      <div class="pos-slot" data-pos="bottom">نیچے</div>
-    </div>
-
-    <h3 style="margin-top:12px;">ٹکر کا بیک گراؤنڈ</h3>
+    <h3>لکھائی کا سائز</h3>
     <div class="row">
-      <input type="color" id="tickerBg" value="#1F2E2B">
-      <span>لکھائی کا رنگ</span>
-      <input type="color" id="tickerFg" value="#F3E9C9">
-    </div>
-
-    <h3>بارڈر سٹائل</h3>
-    <div class="row">
-      <select id="borderSelect">
-        <option value="border-none">بغیر بارڈر</option>
-        <option value="border-solid" selected>ٹھوس فریم</option>
-        <option value="border-double">ڈبل فریم (خبرنامہ سٹائل)</option>
-        <option value="border-dashed">ڈیشڈ فریم</option>
+      <select id="sizeSelect">
+        <option value="18">چھوٹا</option>
+        <option value="24" selected>درمیانہ</option>
+        <option value="30">بڑا</option>
       </select>
     </div>
-
-    <button class="btn btn-ghost" id="previewBtn" style="width:100%;margin-top:6px;">پورا موبائل پریویو دیکھیں</button>
-
-    <div style="font-size:11px;color:#9b9484;margin-top:8px;">
-      نوٹ: یہ چاروں فونٹ (نوری نستعلیق ریگولر/کشیدہ، اے اے سمیر الماس، نفیس نسخ) آپ کی اپنی فائلیں ہیں — fonts/ فولڈر میں الگ سے رکھی گئی ہیں، صفحہ خود ہلکا رہتا ہے۔
+    <h3>پٹی کا بیک گراؤنڈ اور لکھائی کا رنگ</h3>
+    <div class="row">
+      <input type="color" id="tickerBg" value="#1F2E2B">
+      <input type="color" id="tickerFg" value="#F3E9C9">
+    </div>
+    <div style="font-size:11px;color:#9b9484;margin-top:4px;">
+      پٹی ہمیشہ سکرین کے بالکل اوپر چلتی ہے — ٹی وی نیوز پٹی کی طرح۔
     </div>
   </div>
 
-  <div class="addform">
+  <div class="addform" id="addForm">
     <textarea id="noteText" placeholder="مثال: آتے ہوئے دودھ لیتے آئیے گا"></textarea>
-    <div class="addform-row">
-      <input type="time" id="noteTime">
-      <select id="noteFreq">
-        <option value="once">صرف ایک بار</option>
-        <option value="30min">ہر آدھے گھنٹے بعد</option>
-        <option value="60min">ہر گھنٹے بعد</option>
-        <option value="daily">روزانہ اسی وقت</option>
-      </select>
+
+    <div class="addform-label">کن دنوں چلے؟ (کچھ نہ چنیں = ہر روز)</div>
+    <div class="days-row" id="daysRow"></div>
+
+    <div class="addform-label">کس وقت سے کس وقت تک؟ (خالی چھوڑیں = پورا دن)</div>
+    <div class="time-row">
+      <input type="time" id="noteStart">
+      <span>تا</span>
+      <input type="time" id="noteEnd">
     </div>
+    <label class="cont-check">
+      <input type="checkbox" id="noteContinuous"> شروع ہونے کے بعد مسلسل چلتا رہے (ختم وقت کی ضرورت نہیں)
+    </label>
+
     <div class="addform-row">
-      <button class="btn btn-primary" id="addBtn" style="flex:1;">شامل کریں</button>
-      <button class="btn btn-ghost" id="testBtn" style="flex:1;">ابھی چلا کر دیکھیں</button>
+      <button class="btn btn-primary" id="addBtn">شامل کریں</button>
+      <button class="btn btn-ghost" id="cancelEditBtn" style="display:none;">منسوخ</button>
     </div>
   </div>
 
@@ -375,53 +357,193 @@
     <div id="historySection"></div>
   </div>
 
-  <div class="sync-note">یہ فہرست آپ اور بیگم — دونوں کے فون پر ایک جیسی نظر آئے گی</div>
-
-  <div class="preview-overlay" id="previewOverlay">
-    <button class="preview-close" id="previewClose">✕</button>
-    <div class="preview-screen">
-      <div class="preview-ticker top" id="previewTicker">
-        <div class="preview-ticker-text border-solid" id="previewTickerText"></div>
-      </div>
-      <div class="preview-hint">اسی طرح یہ اگلے فون کی سکرین پر بھی نظر آئے گا</div>
-    </div>
-  </div>
+  <div class="sync-note" id="syncNote">یہ پیغامات آپ اور بیگم — دونوں موبائلز پر خودکار شریک ہوتے ہیں</div>
 </div>
 
 <script>
-const STORAGE_KEY = 'ghar-parchi-notes';
+const STORAGE_KEY = 'tawajjo-farmayen-notes';
+const SETTINGS_KEY = 'tawajjo-farmayen-settings';
+const CLOUD_META_KEY = 'tawajjo-farmayen-cloud-meta';
+
+/* ===== Firebase (Firestore) — دو موبائلوں کے درمیان پیغامات شریک کرنے کے لیے =====
+   یہ صرف ایک دستاویز (familyNotes/shared) استعمال کرتی ہے جس میں پورا پیغامات کا
+   ڈھیر JSON کی شکل میں محفوظ ہوتا ہے۔ ہر موبائل ہر 15 سیکنڈ بعد چیک کرتا ہے کہ
+   کہیں دوسرے موبائل سے کوئی نئی تبدیلی تو نہیں آئی۔ ===== */
+const FIREBASE_PROJECT_ID = 'attention-92676';
+const FIREBASE_API_KEY = 'AIzaSyAHMg8c0HUZb5IrTRm-ZF_4Y0YtymoCJS8';
+const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+const AUTH_SIGNUP_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`;
+const AUTH_REFRESH_URL = `https://securetoken.googleapis.com/v1/token?key=${FIREBASE_API_KEY}`;
+const AUTH_KEY = 'tawajjo-farmayen-fbauth';
+const NOTES_DOC = 'familyNotes/shared';
+
+function getAuthState(){
+  try{ return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); }catch(e){ return null; }
+}
+function setAuthState(a){
+  try{ localStorage.setItem(AUTH_KEY, JSON.stringify(a)); }catch(e){}
+}
+async function ensureFirebaseAuth(){
+  const auth = getAuthState();
+  if(auth && auth.idToken && auth.expiresAt && auth.expiresAt > Date.now() + 60000){
+    return auth.idToken;
+  }
+  try{
+    if(auth && auth.refreshToken){
+      const res = await fetch(AUTH_REFRESH_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(auth.refreshToken)}`
+      });
+      if(res.ok){
+        const data = await res.json();
+        const newAuth = { idToken:data.id_token, refreshToken:data.refresh_token, expiresAt:Date.now() + (parseInt(data.expires_in||'3600')*1000) };
+        setAuthState(newAuth);
+        return newAuth.idToken;
+      }
+    }
+    const res = await fetch(AUTH_SIGNUP_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({returnSecureToken:true})
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    const newAuth = { idToken:data.idToken, refreshToken:data.refreshToken, expiresAt:Date.now() + (parseInt(data.expiresIn||'3600')*1000) };
+    setAuthState(newAuth);
+    return newAuth.idToken;
+  }catch(e){ return null; } // آف لائن — کوئی مسئلہ نہیں، مقامی طور پر کام جاری رہے گا
+}
+async function authFirestoreFetch(path, options={}){
+  const token = await ensureFirebaseAuth();
+  if(!token) throw new Error('offline-or-auth-failed');
+  const headers = Object.assign({}, options.headers, {'Authorization':`Bearer ${token}`});
+  return fetch(`${FIRESTORE_BASE}/${path}`, Object.assign({}, options, {headers}));
+}
+function getCloudMeta(){
+  try{ return JSON.parse(localStorage.getItem(CLOUD_META_KEY) || '{}'); }catch(e){ return {}; }
+}
+function setCloudMeta(m){ try{ localStorage.setItem(CLOUD_META_KEY, JSON.stringify(m)); }catch(e){} }
+
+let cloudSyncing = false;
+async function pushNotesToCloud(){
+  try{
+    const now = Date.now();
+    await authFirestoreFetch(`${NOTES_DOC}?key=${FIREBASE_API_KEY}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ fields:{
+        notesJson:{ stringValue: JSON.stringify(notes) },
+        updatedAt:{ integerValue: String(now) }
+      }})
+    });
+    setCloudMeta({updatedAt: now});
+    setSyncStatus('ok');
+  }catch(e){ setSyncStatus('offline'); }
+}
+async function pullNotesFromCloud(applyIfNewer){
+  try{
+    const res = await authFirestoreFetch(`${NOTES_DOC}?key=${FIREBASE_API_KEY}`);
+    if(res.status === 404){ setSyncStatus('ok'); return; } // ابھی تک کوئی دستاویز نہیں بنی
+    if(!res.ok) throw new Error('bad status');
+    const doc = await res.json();
+    const f = doc.fields || {};
+    const cloudUpdatedAt = f.updatedAt ? parseInt(f.updatedAt.integerValue) : 0;
+    const local = getCloudMeta();
+    if(applyIfNewer && cloudUpdatedAt > (local.updatedAt || 0)){
+      const cloudNotes = f.notesJson ? JSON.parse(f.notesJson.stringValue) : [];
+      notes = cloudNotes;
+      saveNotesLocalOnly();
+      setCloudMeta({updatedAt: cloudUpdatedAt});
+      render();
+    }
+    setSyncStatus('ok');
+  }catch(e){ setSyncStatus('offline'); }
+}
+function setSyncStatus(state){
+  const el = document.getElementById('syncNote');
+  if(!el) return;
+  if(state === 'offline'){
+    el.textContent = 'انٹرنیٹ دستیاب نہیں — پیغامات ابھی صرف اسی موبائل پر ہیں، نیٹ ملتے ہی خودکار شریک ہو جائیں گے';
+  } else {
+    el.textContent = 'یہ پیغامات آپ اور بیگم — دونوں موبائلز پر خودکار شریک ہوتے ہیں';
+  }
+}
 const THEMES = [
   {name:'برص', board:'#1F2E2B', brass:'#C9A227', paper:'#FBF6EC', ink:'#3B2A2E'},
   {name:'سبزی', board:'#1E3323', brass:'#8FB996', paper:'#F6F7EE', ink:'#28331F'},
   {name:'مہندی', board:'#2B2118', brass:'#D98E4A', paper:'#FBF3E7', ink:'#3A2A1A'},
   {name:'نیلگوں', board:'#1A2733', brass:'#7FA8C9', paper:'#F1F5F8', ink:'#20303D'},
 ];
+const DAYS = [
+  {v:0,l:'اتوار'}, {v:1,l:'پیر'}, {v:2,l:'منگل'}, {v:3,l:'بدھ'},
+  {v:4,l:'جمعرات'}, {v:5,l:'جمعہ'}, {v:6,l:'ہفتہ'}
+];
 
 let notes = [];
 let editingId = null;
+let selectedDays = [];
 
 function uid(){ return 'n' + Date.now() + Math.random().toString(36).slice(2,7); }
 
-async function loadNotes(){
+/* ===== localStorage — آف لائن کاپی، فوری لوڈ کے لیے ===== */
+function loadNotes(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, true);
-    notes = res ? JSON.parse(res.value) : [];
-  }catch(e){
-    notes = [];
-  }
+    const raw = localStorage.getItem(STORAGE_KEY);
+    notes = raw ? JSON.parse(raw) : [];
+  }catch(e){ notes = []; }
   render();
 }
-
-async function saveNotes(){
+function saveNotesLocalOnly(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); }
+  catch(e){ console.error('محفوظ کرنے میں مسئلہ ہوا', e); }
+}
+function saveNotes(){
+  saveNotesLocalOnly();
+  pushNotesToCloud(); // دوسرے موبائل تک بھی بھیج دیں
+}
+function loadSettings(){
   try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify(notes), true);
-  }catch(e){
-    console.error('محفوظ کرنے میں مسئلہ ہوا', e);
-  }
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveSettings(s){
+  try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }catch(e){}
+}
+function currentSettings(){
+  return {
+    theme: document.querySelector('.swatch.active')?.dataset.i ?? '0',
+    font: document.getElementById('fontSelect').value,
+    speed: document.getElementById('speedSelect').value,
+    size: document.getElementById('sizeSelect').value,
+    bg: document.getElementById('tickerBg').value,
+    fg: document.getElementById('tickerFg').value,
+  };
 }
 
-function freqLabel(f){
-  return {once:'ایک بار', '30min':'ہر آدھا گھنٹہ', '60min':'ہر گھنٹہ', daily:'روزانہ'}[f] || f;
+/* ===== شیڈولنگ: نوٹ اس وقت "چل رہا" ہے یا نہیں ===== */
+function toMin(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+function isActiveNow(n){
+  if(n.done) return false;
+  const now = new Date();
+  if(n.days && n.days.length && !n.days.includes(now.getDay())) return false;
+  if(!n.startTime && !n.endTime) return true; // ٹائم مقرر نہیں = پورا دن
+  const cur = now.getHours()*60 + now.getMinutes();
+  const start = n.startTime ? toMin(n.startTime) : 0;
+  const end = (n.continuous || !n.endTime) ? (24*60 - 1) : toMin(n.endTime);
+  if(start <= end) return cur >= start && cur <= end;
+  return cur >= start || cur <= end; // رات کو شروع، صبح ختم (اوور نائٹ)
+}
+
+function daysLabel(n){
+  if(!n.days || !n.days.length) return 'ہر روز';
+  return n.days.map(d=>DAYS.find(x=>x.v===d)?.l).join('، ');
+}
+function timeLabel(n){
+  if(!n.startTime && !n.endTime) return 'پورا دن';
+  if(n.continuous || !n.endTime) return (n.startTime||'00:00') + ' سے مسلسل';
+  return (n.startTime||'00:00') + ' تا ' + n.endTime;
 }
 
 function render(){
@@ -431,34 +553,31 @@ function render(){
   const activeSection = document.getElementById('activeSection');
   const historySection = document.getElementById('historySection');
 
-  activeSection.innerHTML = '<h2>چلنے والے پیغامات</h2>';
+  activeSection.innerHTML = '<h2>سب پیغامات</h2>';
   if(active.length===0){
     activeSection.innerHTML += '<div class="empty-note">ابھی کوئی پیغام شامل نہیں کیا گیا</div>';
   } else {
-    active.forEach(n=>{
-      activeSection.appendChild(buildItem(n));
-    });
+    active.forEach(n=>{ activeSection.appendChild(buildItem(n)); });
   }
 
   historySection.innerHTML = '';
   if(done.length){
-    historySection.innerHTML = '<h2>مکمل شدہ</h2>';
-    done.forEach(n=>{
-      historySection.appendChild(buildItem(n));
-    });
+    historySection.innerHTML = '<h2>غیر فعال</h2>';
+    done.forEach(n=>{ historySection.appendChild(buildItem(n)); });
   }
 
   updateTicker();
 }
 
 function buildItem(n){
+  const live = isActiveNow(n);
   const div = document.createElement('div');
-  div.className = 'item' + (n.done ? ' done' : '');
+  div.className = 'item' + (n.done ? ' done' : '') + (live ? ' live' : '');
   div.innerHTML = `
-    <div class="check">${n.done?'✓':''}</div>
+    <div class="check">${n.done?'':'✓'}</div>
     <div class="item-body">
       <div class="item-text">${escapeHtml(n.text)}</div>
-      <div class="item-meta">${n.time ? 'وقت: '+n.time+' · ' : ''}${freqLabel(n.freq)}</div>
+      <div class="item-meta ${live?'live-tag':''}">${live?'اب چل رہا ہے · ':''}${daysLabel(n)} · ${timeLabel(n)}</div>
     </div>
     <div class="item-actions">
       <button class="edit" title="ایڈٹ">✎</button>
@@ -475,14 +594,13 @@ function escapeHtml(s){
   return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-async function toggleDone(id){
+function toggleDone(id){
   const n = notes.find(x=>x.id===id);
-  if(n){ n.done = !n.done; await saveNotes(); render(); }
+  if(n){ n.done = !n.done; saveNotes(); render(); }
 }
-
-async function deleteNote(id){
+function deleteNote(id){
   notes = notes.filter(x=>x.id!==id);
-  await saveNotes(); render();
+  saveNotes(); render(); renderPop();
 }
 
 function editNote(id){
@@ -490,40 +608,79 @@ function editNote(id){
   if(!n) return;
   editingId = id;
   document.getElementById('noteText').value = n.text;
-  document.getElementById('noteTime').value = n.time || '';
-  document.getElementById('noteFreq').value = n.freq || 'once';
+  document.getElementById('noteStart').value = n.startTime || '';
+  document.getElementById('noteEnd').value = n.endTime || '';
+  document.getElementById('noteContinuous').checked = !!n.continuous;
+  selectedDays = (n.days || []).slice();
+  renderDayChips();
   document.getElementById('addBtn').textContent = 'محفوظ کریں (ایڈٹ)';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+  document.getElementById('addForm').classList.add('highlight');
+  closePop();
   document.getElementById('noteText').focus();
+  document.getElementById('addForm').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-async function addOrSaveNote(){
+function resetForm(){
+  editingId = null;
+  document.getElementById('noteText').value = '';
+  document.getElementById('noteStart').value = '';
+  document.getElementById('noteEnd').value = '';
+  document.getElementById('noteContinuous').checked = false;
+  selectedDays = [];
+  renderDayChips();
+  document.getElementById('addBtn').textContent = 'شامل کریں';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('addForm').classList.remove('highlight');
+}
+
+function addOrSaveNote(){
   const text = document.getElementById('noteText').value.trim();
   if(!text) return;
-  const time = document.getElementById('noteTime').value;
-  const freq = document.getElementById('noteFreq').value;
+  const startTime = document.getElementById('noteStart').value;
+  const endTime = document.getElementById('noteEnd').value;
+  const continuous = document.getElementById('noteContinuous').checked;
+  const days = selectedDays.slice();
 
   if(editingId){
     const n = notes.find(x=>x.id===editingId);
-    if(n){ n.text=text; n.time=time; n.freq=freq; }
-    editingId = null;
-    document.getElementById('addBtn').textContent = 'شامل کریں';
+    if(n){ Object.assign(n, {text, startTime, endTime, continuous, days}); }
   } else {
-    notes.unshift({id:uid(), text, time, freq, done:false});
+    notes.unshift({id:uid(), text, startTime, endTime, continuous, days, done:false});
   }
-  document.getElementById('noteText').value = '';
-  document.getElementById('noteTime').value = '';
-  await saveNotes();
+  resetForm();
+  saveNotes();
   render();
 }
 
+/* ===== دنوں کے چپس ===== */
+function renderDayChips(){
+  const row = document.getElementById('daysRow');
+  row.innerHTML = '';
+  DAYS.forEach(d=>{
+    const chip = document.createElement('div');
+    chip.className = 'day-chip' + (selectedDays.includes(d.v) ? ' active' : '');
+    chip.textContent = d.l;
+    chip.onclick = ()=>{
+      if(selectedDays.includes(d.v)) selectedDays = selectedDays.filter(x=>x!==d.v);
+      else selectedDays.push(d.v);
+      renderDayChips();
+    };
+    row.appendChild(chip);
+  });
+}
+
+/* ===== ٹکر — ہر وقت وہی پیغامات دکھائے جو ابھی "چل رہے" ہیں ===== */
 let currentTickerText = '';
 function updateTicker(){
-  const active = notes.filter(n=>!n.done);
-  const combined = active.map(n=>n.text).join('   •   ');
   const track = document.getElementById('tickerTrack');
+  if(track.classList.contains('paused')) return; // پاپ اوور کھلا ہو تو مت چھیڑیں
+  const live = notes.filter(isActiveNow);
+  const combined = live.map(n=>n.text).join('   •   ');
   if(!combined){
     track.classList.add('empty');
     track.innerHTML = '<div class="ticker-placeholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>';
+    currentTickerText = '';
     return;
   }
   track.classList.remove('empty');
@@ -534,16 +691,76 @@ function updateTicker(){
   }
 }
 
-// لکھتے ہی فوری طور پر اسی وقت ٹکر پر دکھائیں (محفوظ کرنے سے پہلے کا پیش منظر)
-function showDraftOnTicker(text){
+// لکھتے ہی فوری طور پر اسی وقت ٹکر پر پیش منظر دکھائیں
+document.getElementById('noteText').addEventListener('input', (e)=>{
+  const draft = e.target.value.trim();
   const track = document.getElementById('tickerTrack');
-  track.classList.remove('empty');
-  const speed = document.getElementById('speedSelect').value;
-  track.innerHTML = `<div class="ticker-text" style="animation-duration:${speed}s;">${escapeHtml(text)}</div>`;
-  currentTickerText = '__draft__'; // اصل فہرست پر واپس آتے ہی دوبارہ بننا یقینی بنائیں
-}
+  if(draft){
+    track.classList.remove('empty');
+    const speed = document.getElementById('speedSelect').value;
+    track.innerHTML = `<div class="ticker-text" style="animation-duration:${speed}s;">${escapeHtml(draft)}</div>`;
+    currentTickerText = '__draft__';
+  } else {
+    currentTickerText = '';
+    updateTicker();
+  }
+});
 
-// settings panel
+/* ===== لمبا دبانے پر پاپ اوور — ایڈٹ / ڈیلیٹ / نیا شامل کریں ===== */
+const board = document.getElementById('board');
+const tickerTrack = document.getElementById('tickerTrack');
+const tickerPop = document.getElementById('tickerPop');
+let pressTimer = null;
+
+function openPop(){
+  tickerTrack.classList.add('paused');
+  renderPop();
+  tickerPop.classList.add('open');
+}
+function closePop(){
+  tickerTrack.classList.remove('paused');
+  tickerPop.classList.remove('open');
+  currentTickerText = '';
+  updateTicker();
+}
+function renderPop(){
+  const live = notes.filter(isActiveNow);
+  const list = document.getElementById('popList');
+  list.innerHTML = '';
+  if(!live.length){
+    list.innerHTML = '<div class="pop-empty">اس وقت کوئی پیغام چل نہیں رہا</div>';
+  } else {
+    live.forEach(n=>{
+      const row = document.createElement('div');
+      row.className = 'pop-item';
+      row.innerHTML = `<div class="txt">${escapeHtml(n.text)}</div>
+        <button class="edit" title="ایڈٹ">✎</button>
+        <button class="del" title="ڈیلیٹ">✕</button>`;
+      row.querySelector('.edit').onclick = ()=>editNote(n.id);
+      row.querySelector('.del').onclick = ()=>deleteNote(n.id);
+      list.appendChild(row);
+    });
+  }
+}
+board.addEventListener('pointerdown', (e)=>{
+  pressTimer = setTimeout(openPop, 450);
+});
+['pointerup','pointerleave','pointercancel'].forEach(evt=>{
+  board.addEventListener(evt, ()=>{ clearTimeout(pressTimer); });
+});
+document.getElementById('popAddBtn').onclick = ()=>{
+  closePop();
+  resetForm();
+  document.getElementById('noteText').focus();
+  document.getElementById('addForm').scrollIntoView({behavior:'smooth', block:'center'});
+};
+document.addEventListener('click', (e)=>{
+  if(tickerPop.classList.contains('open') && !tickerPop.contains(e.target) && !board.contains(e.target)){
+    closePop();
+  }
+});
+
+/* ===== settings panel ===== */
 document.getElementById('settingsToggle').onclick = ()=>{
   document.getElementById('settingsPanel').classList.toggle('open');
 };
@@ -551,7 +768,8 @@ document.getElementById('settingsToggle').onclick = ()=>{
 const colorRow = document.getElementById('colorRow');
 THEMES.forEach((t,i)=>{
   const sw = document.createElement('div');
-  sw.className = 'swatch' + (i===0?' active':'');
+  sw.className = 'swatch';
+  sw.dataset.i = i;
   sw.style.background = t.board;
   sw.title = t.name;
   sw.onclick = ()=>{
@@ -559,8 +777,12 @@ THEMES.forEach((t,i)=>{
     document.documentElement.style.setProperty('--brass', t.brass);
     document.documentElement.style.setProperty('--paper', t.paper);
     document.documentElement.style.setProperty('--ink', t.ink);
+    document.getElementById('tickerBg').value = t.board;
+    document.getElementById('tickerFg').value = t.brass;
+    document.documentElement.style.setProperty('--board-ink', t.brass);
     [...colorRow.children].forEach(c=>c.classList.remove('active'));
     sw.classList.add('active');
+    persistSettings();
   };
   colorRow.appendChild(sw);
 });
@@ -568,85 +790,60 @@ THEMES.forEach((t,i)=>{
 document.getElementById('fontSelect').onchange = (e)=>{
   const fam = e.target.value;
   document.documentElement.style.setProperty('--content-font', `'${fam}', serif`);
-  // پریویو کھلا ہو تو اسے بھی فوراً اسی فونٹ میں دکھائیں
-  const previewText = document.getElementById('previewTickerText');
-  if(previewText) previewText.style.fontFamily = `'${fam}', serif`;
-  currentTickerText = ''; // ٹکر کو دوبارہ بنا کر نیا فونٹ لاگو کریں
+  currentTickerText = '';
   updateTicker();
+  persistSettings();
 };
-
-document.getElementById('speedSelect').onchange = ()=>{ currentTickerText=''; updateTicker(); };
+document.getElementById('speedSelect').onchange = ()=>{ currentTickerText=''; updateTicker(); persistSettings(); };
+document.getElementById('sizeSelect').onchange = (e)=>{
+  document.documentElement.style.setProperty('--ticker-size', e.target.value + 'px');
+  document.documentElement.style.setProperty('--ticker-h', (parseInt(e.target.value) + 28) + 'px');
+  currentTickerText = '';
+  updateTicker();
+  persistSettings();
+};
+document.getElementById('tickerBg').addEventListener('input', (e)=>{
+  document.documentElement.style.setProperty('--board', e.target.value);
+  persistSettings();
+});
+document.getElementById('tickerFg').addEventListener('input', (e)=>{
+  document.documentElement.style.setProperty('--board-ink', e.target.value);
+  persistSettings();
+});
 
 document.getElementById('addBtn').onclick = addOrSaveNote;
-document.getElementById('testBtn').onclick = ()=>{ currentTickerText=''; updateTicker(); };
+document.getElementById('cancelEditBtn').onclick = resetForm;
 
-// ===== Position picker =====
-let tickerPos = 'top';
-document.querySelectorAll('.pos-slot').forEach(slot=>{
-  slot.onclick = ()=>{
-    document.querySelectorAll('.pos-slot').forEach(s=>s.classList.remove('active'));
-    slot.classList.add('active');
-    tickerPos = slot.dataset.pos;
-    syncPreviewStyle();
-  };
-});
-
-// ===== Colors + border =====
-const tickerBgInput = document.getElementById('tickerBg');
-const tickerFgInput = document.getElementById('tickerFg');
-const borderSelect = document.getElementById('borderSelect');
-[tickerBgInput, tickerFgInput, borderSelect].forEach(el=>{
-  el.addEventListener('input', syncPreviewStyle);
-});
-
-function syncPreviewStyle(){
-  const bg = tickerBgInput.value;
-  const fg = tickerFgInput.value;
-  const borderClass = borderSelect.value;
-
-  // live board colors
-  document.documentElement.style.setProperty('--board', bg);
-  document.documentElement.style.setProperty('--board-ink', fg);
-
-  const pTicker = document.getElementById('previewTicker');
-  pTicker.className = 'preview-ticker ' + tickerPos;
-  pTicker.style.background = bg;
-
-  const pText = document.getElementById('previewTickerText');
-  pText.className = 'preview-ticker-text ' + borderClass;
-  pText.style.color = fg;
-  pText.style.borderColor = fg;
-}
-
-// ===== Live full-screen preview =====
-const previewOverlay = document.getElementById('previewOverlay');
-function updatePreviewText(){
-  const text = document.getElementById('noteText').value.trim() || 'یہاں آپ کا پیغام اسی طرح چلتا نظر آئے گا';
-  document.getElementById('previewTickerText').textContent = text;
-}
-document.getElementById('previewBtn').onclick = ()=>{
-  updatePreviewText();
-  syncPreviewStyle();
-  previewOverlay.classList.add('open');
-};
-document.getElementById('previewClose').onclick = ()=>{
-  previewOverlay.classList.remove('open');
-};
-document.getElementById('noteText').addEventListener('input', (e)=>{
-  if(previewOverlay.classList.contains('open')) updatePreviewText();
-
-  // اوپر والے بورڈ ٹکر پر بھی فوری طور پر لائیو دکھائیں
-  const draft = e.target.value.trim();
-  if(draft){
-    showDraftOnTicker(draft);
-  } else {
-    currentTickerText = '';
-    updateTicker(); // خالی کریں تو اصل شیڈول شدہ فہرست واپس دکھائیں
+function persistSettings(){ saveSettings(currentSettings()); }
+function applySettings(){
+  const s = loadSettings();
+  if(s.theme !== undefined){
+    const sw = colorRow.children[s.theme];
+    if(sw) sw.click();
+  } else if(colorRow.children[0]){
+    colorRow.children[0].classList.add('active');
   }
-});
+  if(s.font){ document.getElementById('fontSelect').value = s.font; document.documentElement.style.setProperty('--content-font', `'${s.font}', serif`); }
+  if(s.speed){ document.getElementById('speedSelect').value = s.speed; }
+  if(s.size){
+    document.getElementById('sizeSelect').value = s.size;
+    document.documentElement.style.setProperty('--ticker-size', s.size + 'px');
+    document.documentElement.style.setProperty('--ticker-h', (parseInt(s.size) + 28) + 'px');
+  }
+  if(s.bg){ document.getElementById('tickerBg').value = s.bg; document.documentElement.style.setProperty('--board', s.bg); }
+  if(s.fg){ document.getElementById('tickerFg').value = s.fg; document.documentElement.style.setProperty('--board-ink', s.fg); }
+}
 
-syncPreviewStyle();
+renderDayChips();
+applySettings();
 loadNotes();
+pullNotesFromCloud(true); // ایپ کھلتے ہی دوسرے موبائل کی نئی تبدیلیاں لے آئیں
+
+// ہر منٹ خود بخود دیکھیں کہ وقت/دن کے حساب سے کون سا پیغام اب "چلنا" چاہیے
+setInterval(()=>{ render(); }, 30000);
+
+// ہر 15 سیکنڈ بعد دوسرے موبائل سے نئے/تبدیل شدہ پیغامات چیک کریں
+setInterval(()=>{ pullNotesFromCloud(true); }, 15000);
 
 // ===== Offline support (PWA) =====
 if('serviceWorker' in navigator){
