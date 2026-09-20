@@ -50,10 +50,15 @@
     --ticker-h:52px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{ margin:0; padding:0; background:#DCD3BE; }
+  html,body{
+    margin:0; padding:0; background:#DCD3BE;
+    height:100%; overflow:hidden; overscroll-behavior:none;
+    -webkit-user-select:none; user-select:none;
+    -webkit-touch-callout:none;
+  }
   body{
     font-family:var(--ui-font);
-    min-height:100vh;
+    height:100%;
     color:var(--ink);
   }
   .app{
@@ -75,11 +80,11 @@
     background:var(--board);
     color:var(--board-ink);
     z-index:500;
-    width:var(--board-w,100%);
+    width:100%;
     border-top:var(--border-top-w,0px) solid var(--border-top-color,#C9A227);
     border-bottom:var(--border-bottom-w,4px) solid var(--border-bottom-color,#C9A227);
     padding-top:env(safe-area-inset-top);
-    touch-action:pan-y;
+    touch-action:none;
     -webkit-user-select:none; user-select:none;
     -webkit-touch-callout:none;
   }
@@ -196,10 +201,34 @@
   .settings.open{ display:block; }
   .settings h3{ margin:0 0 8px; font-size:13px; color:var(--ink); font-family:var(--ui-font);}
   .row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
-  .swatch{
-    width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  .srow{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; padding:11px 0; border-bottom:1px solid var(--line);
   }
-  .swatch.active{ border-color:var(--ink); }
+  .srow:last-child{ border-bottom:none; }
+  .srow .slabel{
+    font-size:13px; color:var(--ink); font-family:var(--ui-font); font-weight:700;
+    flex-shrink:0;
+  }
+  .srow .scontrol{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+  }
+  .srow select{ min-width:0; }
+  .stepbtn{
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    width:30px; height:30px; border-radius:8px; font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .stepval{ min-width:56px; text-align:center; font-family:var(--ui-font); font-size:13px; color:var(--ink); }
+  .posbtn{
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:8px; padding:6px 10px; font-family:var(--ui-font); font-size:12px; cursor:pointer;
+  }
+  .swatch{
+    width:34px;height:34px;border-radius:10px;cursor:pointer;border:2px solid transparent;
+    box-shadow:0 1px 3px rgba(0,0,0,.18);
+  }
+  .swatch.active{ border-color:var(--ink); transform:scale(1.06); }
   select, input[type=text], input[type=time]{
     font-family:var(--ui-font);
     padding:6px 8px;
@@ -318,70 +347,90 @@
   </div>
 
   <div class="settings" id="settingsPanel">
-    <h3>رنگ سکیم</h3>
-    <div class="row" id="colorRow"></div>
-    <h3>فونٹ</h3>
-    <div class="row">
-      <select id="fontSelect">
-        <option value="Jameel Noori Nastaleeq">نوری نستعلیق — ریگولر</option>
-        <option value="Jameel Noori Nastaleeq Kasheeda">نوری نستعلیق — کشیدہ</option>
-        <option value="AA Sameer Almas">اے اے سمیر الماس</option>
-        <option value="Nafees Naskh">نفیس نسخ</option>
-      </select>
+    <div class="srow">
+      <span class="slabel">رنگ سکیم</span>
+      <div class="scontrol" id="colorRow"></div>
     </div>
-    <h3>سکرول کی رفتار (— دبائیں تو تیز، + دبائیں تو آہستہ)</h3>
-    <div class="row">
-      <button type="button" class="btn btn-ghost" id="speedMinus" style="padding:6px 14px;">−</button>
-      <span id="speedValue" style="min-width:70px;text-align:center;font-family:var(--ui-font);font-size:14px;">14 سیکنڈ</span>
-      <button type="button" class="btn btn-ghost" id="speedPlus" style="padding:6px 14px;">+</button>
+    <div class="srow">
+      <span class="slabel">فونٹ</span>
+      <div class="scontrol">
+        <select id="fontSelect">
+          <option value="Jameel Noori Nastaleeq">نوری نستعلیق — ریگولر</option>
+          <option value="Jameel Noori Nastaleeq Kasheeda">نوری نستعلیق — کشیدہ</option>
+          <option value="AA Sameer Almas">اے اے سمیر الماس</option>
+          <option value="Nafees Naskh">نفیس نسخ</option>
+        </select>
+      </div>
     </div>
-    <h3>لکھائی کا سائز</h3>
-    <div class="row">
-      <select id="sizeSelect">
-        <option value="18">چھوٹا</option>
-        <option value="24" selected>درمیانہ</option>
-        <option value="30">بڑا</option>
-      </select>
+    <div class="srow">
+      <span class="slabel">رفتار (− تیز / + آہستہ)</span>
+      <div class="scontrol">
+        <button type="button" class="stepbtn" id="speedMinus">−</button>
+        <span class="stepval" id="speedValue">14 سیکنڈ</span>
+        <button type="button" class="stepbtn" id="speedPlus">+</button>
+      </div>
     </div>
-    <h3>پٹی کا بیک گراؤنڈ اور لکھائی کا رنگ</h3>
-    <div class="row">
-      <input type="color" id="tickerBg" value="#1F2E2B">
-      <input type="color" id="tickerFg" value="#F3E9C9">
+    <div class="srow">
+      <span class="slabel">لکھائی کا سائز</span>
+      <div class="scontrol">
+        <select id="sizeSelect">
+          <option value="18">چھوٹا</option>
+          <option value="24" selected>درمیانہ</option>
+          <option value="30">بڑا</option>
+        </select>
+      </div>
     </div>
-    <h3>پیغامات کے درمیان فاصلہ</h3>
-    <div class="row">
-      <select id="gapSelect">
-        <option value="compact">کم</option>
-        <option value="normal" selected>درمیانہ</option>
-        <option value="wide">زیادہ</option>
-      </select>
+    <div class="srow">
+      <span class="slabel">پٹی کا رنگ / لکھائی کا رنگ</span>
+      <div class="scontrol">
+        <input type="color" id="tickerBg" value="#1F2E2B">
+        <input type="color" id="tickerFg" value="#F3E9C9">
+      </div>
     </div>
-    <h3>اوپر والا بارڈر</h3>
-    <div class="row">
-      <label class="cont-check"><input type="checkbox" id="borderTopOn"> فعال کریں</label>
-      <input type="color" id="borderTopColor" value="#C9A227">
+    <div class="srow">
+      <span class="slabel">پیغامات کا فاصلہ</span>
+      <div class="scontrol">
+        <select id="gapSelect">
+          <option value="compact">کم</option>
+          <option value="normal" selected>درمیانہ</option>
+          <option value="wide">زیادہ</option>
+        </select>
+      </div>
     </div>
-    <h3>نیچے والا بارڈر</h3>
-    <div class="row">
-      <label class="cont-check"><input type="checkbox" id="borderBottomOn" checked> فعال کریں</label>
-      <input type="color" id="borderBottomColor" value="#C9A227">
+    <div class="srow">
+      <span class="slabel">اوپر بارڈر</span>
+      <div class="scontrol">
+        <input type="checkbox" id="borderTopOn">
+        <input type="color" id="borderTopColor" value="#C9A227">
+      </div>
     </div>
-    <h3>پٹی کی چوڑائی (— کم، + زیادہ)</h3>
-    <div class="row">
-      <button type="button" class="btn btn-ghost" id="widthMinus" style="padding:6px 14px;">−</button>
-      <span id="widthValue" style="min-width:60px;text-align:center;font-family:var(--ui-font);font-size:14px;">100%</span>
-      <button type="button" class="btn btn-ghost" id="widthPlus" style="padding:6px 14px;">+</button>
+    <div class="srow">
+      <span class="slabel">نیچے بارڈر</span>
+      <div class="scontrol">
+        <input type="checkbox" id="borderBottomOn" checked>
+        <input type="color" id="borderBottomColor" value="#C9A227">
+      </div>
     </div>
-    <h3>پٹی کی جگہ (پوزیشن)</h3>
-    <div class="row">
-      <button type="button" class="btn btn-ghost" id="posTopBtn">سب سے اوپر</button>
-      <button type="button" class="btn btn-ghost" id="posBottomBtn">سب سے نیچے</button>
+    <div class="srow">
+      <span class="slabel">موٹائی (− پتلی / + موٹی)</span>
+      <div class="scontrol">
+        <button type="button" class="stepbtn" id="thickMinus">−</button>
+        <span class="stepval" id="thickValue">0</span>
+        <button type="button" class="stepbtn" id="thickPlus">+</button>
+      </div>
     </div>
-    <div class="row">
-      <label class="cont-check"><input type="checkbox" id="dragEnable"> انگلی سے پکڑ کر جگہ بدلیں — چھوڑتے ہی وہیں لاک ہو جائے گی</label>
+    <div class="srow">
+      <span class="slabel">پٹی کی جگہ</span>
+      <div class="scontrol">
+        <button type="button" class="posbtn" id="posTopBtn">اوپر</button>
+        <button type="button" class="posbtn" id="posBottomBtn">نیچے</button>
+      </div>
     </div>
-    <div style="font-size:11px;color:#9b9484;margin-top:4px;">
-      پٹی ہمیشہ سکرین کے بالکل اوپر چلتی ہے — ٹی وی نیوز پٹی کی طرح۔ پیغام شامل/ایڈٹ کرنے کے بعد یہ خودکار واپس صرف پٹی کی شکل میں آ جائے گی۔
+    <div class="srow">
+      <span class="slabel">انگلی سے ڈریگ کر کے جگہ بدلیں</span>
+      <div class="scontrol">
+        <input type="checkbox" id="dragEnable">
+      </div>
     </div>
   </div>
 
@@ -484,7 +533,7 @@ let cloudSyncing = false;
 async function pushNotesToCloud(){
   try{
     const now = Date.now();
-    await authFirestoreFetch(`${NOTES_DOC}?key=${FIREBASE_API_KEY}`, {
+    await authFirestoreFetch(`${NOTES_DOC}?key=${FIREBASE_API_KEY}&updateMask.fieldPaths=notesJson&updateMask.fieldPaths=updatedAt`, {
       method:'PATCH',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ fields:{
@@ -492,9 +541,27 @@ async function pushNotesToCloud(){
         updatedAt:{ integerValue: String(now) }
       }})
     });
-    setCloudMeta({updatedAt: now});
+    const meta = getCloudMeta();
+    meta.updatedAt = now;
+    setCloudMeta(meta);
     setSyncStatus('ok');
   }catch(e){ setSyncStatus('offline'); }
+}
+async function pushSettingsToCloud(s){
+  try{
+    const now = Date.now();
+    await authFirestoreFetch(`${NOTES_DOC}?key=${FIREBASE_API_KEY}&updateMask.fieldPaths=settingsJson&updateMask.fieldPaths=settingsUpdatedAt`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ fields:{
+        settingsJson:{ stringValue: JSON.stringify(s) },
+        settingsUpdatedAt:{ integerValue: String(now) }
+      }})
+    });
+    const meta = getCloudMeta();
+    meta.settingsUpdatedAt = now;
+    setCloudMeta(meta);
+  }catch(e){ /* آف لائن — کوئی مسئلہ نہیں */ }
 }
 async function pullNotesFromCloud(applyIfNewer){
   try{
@@ -503,15 +570,28 @@ async function pullNotesFromCloud(applyIfNewer){
     if(!res.ok) throw new Error('bad status');
     const doc = await res.json();
     const f = doc.fields || {};
-    const cloudUpdatedAt = f.updatedAt ? parseInt(f.updatedAt.integerValue) : 0;
     const local = getCloudMeta();
+
+    const cloudUpdatedAt = f.updatedAt ? parseInt(f.updatedAt.integerValue) : 0;
     if(applyIfNewer && cloudUpdatedAt > (local.updatedAt || 0)){
       const cloudNotes = f.notesJson ? JSON.parse(f.notesJson.stringValue) : [];
       notes = cloudNotes;
       saveNotesLocalOnly();
-      setCloudMeta({updatedAt: cloudUpdatedAt});
+      local.updatedAt = cloudUpdatedAt;
       render();
     }
+
+    const cloudSettingsAt = f.settingsUpdatedAt ? parseInt(f.settingsUpdatedAt.integerValue) : 0;
+    if(applyIfNewer && f.settingsJson && cloudSettingsAt > (local.settingsUpdatedAt || 0)){
+      try{
+        const cloudSettings = JSON.parse(f.settingsJson.stringValue);
+        saveSettings(cloudSettings);
+        applySettingsObj(cloudSettings);
+        local.settingsUpdatedAt = cloudSettingsAt;
+      }catch(e){}
+    }
+
+    setCloudMeta(local);
     setSyncStatus('ok');
   }catch(e){ setSyncStatus('offline'); }
 }
@@ -544,12 +624,18 @@ function updateSpeedDisplay(){
   const el = document.getElementById('speedValue');
   if(el) el.textContent = tickerSpeed + ' سیکنڈ';
 }
-let boardWidthPct = 100; // فیصد — پٹی کی چوڑائی
-const WIDTH_MIN = 40, WIDTH_MAX = 100;
-function updateWidthDisplay(){
-  const el = document.getElementById('widthValue');
-  if(el) el.textContent = boardWidthPct + '%';
-  document.documentElement.style.setProperty('--board-w', boardWidthPct + '%');
+let barExtraH = 0; // px — پٹی کی اضافی موٹائی (اوپر نیچے)، فونٹ سائز کے علاوہ
+const THICK_MIN = -20, THICK_MAX = 60;
+function updateThickDisplay(){
+  const el = document.getElementById('thickValue');
+  if(el) el.textContent = barExtraH;
+  updateTickerHeight();
+}
+function updateTickerHeight(){
+  const sizeEl = document.getElementById('sizeSelect');
+  const fontPx = sizeEl ? parseInt(sizeEl.value) : 24;
+  const h = Math.max(28, fontPx + 28 + barExtraH);
+  document.documentElement.style.setProperty('--ticker-h', h + 'px');
 }
 
 function uid(){ return 'n' + Date.now() + Math.random().toString(36).slice(2,7); }
@@ -593,7 +679,7 @@ function currentSettings(){
     borderBottomOn: document.getElementById('borderBottomOn').checked,
     borderBottomColor: document.getElementById('borderBottomColor').value,
     posTop: boardTop,
-    widthPct: boardWidthPct,
+    thickness: barExtraH,
   };
 }
 
@@ -841,17 +927,25 @@ board.addEventListener('pointerdown', (e)=>{
     dragStartY = e.clientY;
     dragStartTop = boardTop;
     try{ board.setPointerCapture(e.pointerId); }catch(err){}
+    e.preventDefault();
   } else {
     pressTimer = setTimeout(openPop, 450);
   }
 });
 board.addEventListener('pointermove', (e)=>{
-  if(dragging){ setBoardTop(dragStartTop + (e.clientY - dragStartY)); }
+  if(dragging){
+    setBoardTop(dragStartTop + (e.clientY - dragStartY));
+    e.preventDefault();
+  }
 });
 ['pointerup','pointerleave','pointercancel'].forEach(evt=>{
-  board.addEventListener(evt, ()=>{
+  board.addEventListener(evt, (e)=>{
     clearTimeout(pressTimer);
-    if(dragging){ dragging = false; persistSettings(); } // چھوڑتے ہی یہیں لاک ہو گئی
+    if(dragging){
+      dragging = false;
+      persistSettings(); // چھوڑتے ہی یہیں لاک ہو گئی
+      try{ window.getSelection && window.getSelection().removeAllRanges(); }catch(err){}
+    }
   });
 });
 document.getElementById('popAddBtn').onclick = ()=>{
@@ -895,7 +989,7 @@ THEMES.forEach((t,i)=>{
   const sw = document.createElement('div');
   sw.className = 'swatch';
   sw.dataset.i = i;
-  sw.style.background = t.board;
+  sw.style.background = `linear-gradient(135deg, ${t.board} 50%, ${t.brass} 50%)`;
   sw.title = t.name;
   sw.onclick = ()=>{
     document.documentElement.style.setProperty('--board', t.board);
@@ -929,20 +1023,21 @@ document.getElementById('speedPlus').onclick = ()=>{
   updateSpeedDisplay();
   currentTickerText=''; updateTicker(); persistSettings();
 };
-document.getElementById('widthMinus').onclick = ()=>{
-  boardWidthPct = Math.max(WIDTH_MIN, boardWidthPct - 5);
-  updateWidthDisplay();
+document.getElementById('thickMinus').onclick = ()=>{
+  barExtraH = Math.max(THICK_MIN, barExtraH - 4);
+  updateThickDisplay();
   setTimeout(()=>setBoardTop(boardTop), 0); // دوبارہ حد میں رکھیں
   persistSettings();
 };
-document.getElementById('widthPlus').onclick = ()=>{
-  boardWidthPct = Math.min(WIDTH_MAX, boardWidthPct + 5);
-  updateWidthDisplay();
+document.getElementById('thickPlus').onclick = ()=>{
+  barExtraH = Math.min(THICK_MAX, barExtraH + 4);
+  updateThickDisplay();
+  setTimeout(()=>setBoardTop(boardTop), 0);
   persistSettings();
 };
 document.getElementById('sizeSelect').onchange = (e)=>{
   document.documentElement.style.setProperty('--ticker-size', e.target.value + 'px');
-  document.documentElement.style.setProperty('--ticker-h', (parseInt(e.target.value) + 28) + 'px');
+  updateTickerHeight();
   currentTickerText = '';
   updateTicker();
   persistSettings();
@@ -959,9 +1054,15 @@ document.getElementById('tickerFg').addEventListener('input', (e)=>{
 document.getElementById('addBtn').onclick = addOrSaveNote;
 document.getElementById('cancelEditBtn').onclick = resetForm;
 
-function persistSettings(){ saveSettings(currentSettings()); }
+function persistSettings(){
+  const s = currentSettings();
+  saveSettings(s);
+  pushSettingsToCloud(s); // دوسرے موبائل تک بھی سیٹنگز بھیج دیں
+}
 function applySettings(){
-  const s = loadSettings();
+  applySettingsObj(loadSettings());
+}
+function applySettingsObj(s){
   if(s.theme !== undefined){
     const sw = colorRow.children[s.theme];
     if(sw) sw.click();
@@ -973,7 +1074,6 @@ function applySettings(){
   if(s.size){
     document.getElementById('sizeSelect').value = s.size;
     document.documentElement.style.setProperty('--ticker-size', s.size + 'px');
-    document.documentElement.style.setProperty('--ticker-h', (parseInt(s.size) + 28) + 'px');
   }
   if(s.bg){ document.getElementById('tickerBg').value = s.bg; document.documentElement.style.setProperty('--board', s.bg); }
   if(s.fg){ document.getElementById('tickerFg').value = s.fg; document.documentElement.style.setProperty('--board-ink', s.fg); }
@@ -984,8 +1084,8 @@ function applySettings(){
   document.getElementById('borderBottomOn').checked = (s.borderBottomOn !== undefined) ? !!s.borderBottomOn : true;
   applyBorders();
   updateSpeedDisplay();
-  if(s.widthPct){ boardWidthPct = parseInt(s.widthPct) || 100; }
-  updateWidthDisplay();
+  if(s.thickness !== undefined){ barExtraH = parseInt(s.thickness) || 0; }
+  updateThickDisplay();
   if(s.posTop !== undefined){ setBoardTop(s.posTop); }
 }
 function applyBorders(){
@@ -1005,8 +1105,8 @@ pullNotesFromCloud(true); // ایپ کھلتے ہی دوسرے موبائل کی
 // ہر منٹ خود بخود دیکھیں کہ وقت/دن کے حساب سے کون سا پیغام اب "چلنا" چاہیے
 setInterval(()=>{ render(); }, 30000);
 
-// ہر 15 سیکنڈ بعد دوسرے موبائل سے نئے/تبدیل شدہ پیغامات چیک کریں
-setInterval(()=>{ pullNotesFromCloud(true); }, 15000);
+// ہر 3 سیکنڈ بعد دوسرے موبائل/ونڈو سے نئے/تبدیل شدہ پیغامات و سیٹنگز چیک کریں
+setInterval(()=>{ pullNotesFromCloud(true); }, 3000);
 
 // ===== Offline support (PWA) =====
 if('serviceWorker' in navigator){
