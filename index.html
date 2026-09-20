@@ -215,20 +215,26 @@
   }
   .srow select{ min-width:0; }
   .stepbtn{
-    border:1px solid var(--line); background:#fff; color:var(--ink);
-    width:30px; height:30px; border-radius:8px; font-size:16px; cursor:pointer;
+    border:none; background:var(--brass); color:#2b2320;
+    width:32px; height:32px; border-radius:9px; font-size:17px; font-weight:700; cursor:pointer;
     display:flex; align-items:center; justify-content:center; padding:0;
+    box-shadow:0 1px 3px rgba(0,0,0,.2);
   }
-  .stepval{ min-width:56px; text-align:center; font-family:var(--ui-font); font-size:13px; color:var(--ink); }
+  .stepbtn:active{ transform:scale(.94); }
+  .stepval{ min-width:58px; text-align:center; font-family:var(--ui-font); font-size:13px; color:var(--ink); font-weight:600;}
   .posbtn{
-    border:1px solid var(--line); background:#fff; color:var(--ink);
-    border-radius:8px; padding:6px 10px; font-family:var(--ui-font); font-size:12px; cursor:pointer;
+    border:1px solid var(--brass); background:#fff; color:var(--ink);
+    border-radius:9px; padding:7px 12px; font-family:var(--ui-font); font-size:12px; cursor:pointer; font-weight:600;
   }
+  .posbtn:active{ background:var(--brass); color:#2b2320; }
+  .theme-pick{ display:flex; gap:10px; flex-wrap:wrap; }
+  .theme-item{ display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; }
   .swatch{
-    width:34px;height:34px;border-radius:10px;cursor:pointer;border:2px solid transparent;
-    box-shadow:0 1px 3px rgba(0,0,0,.18);
+    width:32px;height:32px;border-radius:9px;cursor:pointer;border:2px solid transparent;
+    box-shadow:0 1px 4px rgba(0,0,0,.2);
   }
-  .swatch.active{ border-color:var(--ink); transform:scale(1.06); }
+  .swatch.active{ border-color:var(--brass); box-shadow:0 0 0 2px var(--brass), 0 1px 4px rgba(0,0,0,.2); }
+  .theme-item span{ font-size:10px; color:#8b8578; font-family:var(--ui-font); }
   select, input[type=text], input[type=time]{
     font-family:var(--ui-font);
     padding:6px 8px;
@@ -349,7 +355,7 @@
   <div class="settings" id="settingsPanel">
     <div class="srow">
       <span class="slabel">رنگ سکیم</span>
-      <div class="scontrol" id="colorRow"></div>
+      <div class="scontrol theme-pick" id="colorRow"></div>
     </div>
     <div class="srow">
       <span class="slabel">فونٹ</span>
@@ -609,6 +615,8 @@ const THEMES = [
   {name:'سبزی', board:'#1E3323', brass:'#8FB996', paper:'#F6F7EE', ink:'#28331F'},
   {name:'مہندی', board:'#2B2118', brass:'#D98E4A', paper:'#FBF3E7', ink:'#3A2A1A'},
   {name:'نیلگوں', board:'#1A2733', brass:'#7FA8C9', paper:'#F1F5F8', ink:'#20303D'},
+  {name:'روشن', board:'#F3ECDA', brass:'#8B5E1F', paper:'#FFFFFF', ink:'#2B2320'},
+  {name:'سرخی', board:'#3A1418', brass:'#E0847A', paper:'#FBF1EE', ink:'#3A1418'},
 ];
 const DAYS = [
   {v:0,l:'اتوار'}, {v:1,l:'پیر'}, {v:2,l:'منگل'}, {v:3,l:'بدھ'},
@@ -986,12 +994,19 @@ document.getElementById('gapSelect').addEventListener('change', ()=>{
 
 const colorRow = document.getElementById('colorRow');
 THEMES.forEach((t,i)=>{
+  const item = document.createElement('div');
+  item.className = 'theme-item';
   const sw = document.createElement('div');
   sw.className = 'swatch';
   sw.dataset.i = i;
   sw.style.background = `linear-gradient(135deg, ${t.board} 50%, ${t.brass} 50%)`;
   sw.title = t.name;
-  sw.onclick = ()=>{
+  const cap = document.createElement('span');
+  cap.textContent = t.name;
+  item.appendChild(sw);
+  item.appendChild(cap);
+  colorRow.appendChild(item);
+  const pick = ()=>{
     document.documentElement.style.setProperty('--board', t.board);
     document.documentElement.style.setProperty('--brass', t.brass);
     document.documentElement.style.setProperty('--paper', t.paper);
@@ -999,11 +1014,12 @@ THEMES.forEach((t,i)=>{
     document.getElementById('tickerBg').value = t.board;
     document.getElementById('tickerFg').value = t.brass;
     document.documentElement.style.setProperty('--board-ink', t.brass);
-    [...colorRow.children].forEach(c=>c.classList.remove('active'));
+    colorRow.querySelectorAll('.swatch').forEach(c=>c.classList.remove('active'));
     sw.classList.add('active');
     persistSettings();
   };
-  colorRow.appendChild(sw);
+  sw.onclick = pick;
+  item.onclick = pick;
 });
 
 document.getElementById('fontSelect').onchange = (e)=>{
@@ -1064,10 +1080,11 @@ function applySettings(){
 }
 function applySettingsObj(s){
   if(s.theme !== undefined){
-    const sw = colorRow.children[s.theme];
-    if(sw) sw.click();
+    const item = colorRow.children[s.theme];
+    if(item) item.click();
   } else if(colorRow.children[0]){
-    colorRow.children[0].classList.add('active');
+    const firstSw = colorRow.children[0].querySelector('.swatch');
+    if(firstSw) firstSw.classList.add('active');
   }
   if(s.font){ document.getElementById('fontSelect').value = s.font; document.documentElement.style.setProperty('--content-font', `'${s.font}', serif`); }
   if(s.speed){ tickerSpeed = parseInt(s.speed) || 14; updateSpeedDisplay(); }
@@ -1107,6 +1124,14 @@ setInterval(()=>{ render(); }, 30000);
 
 // ہر 3 سیکنڈ بعد دوسرے موبائل/ونڈو سے نئے/تبدیل شدہ پیغامات و سیٹنگز چیک کریں
 setInterval(()=>{ pullNotesFromCloud(true); }, 3000);
+
+// ہر 1 منٹ بعد پیج خود بخود ریلوڈ ہو جائے — تاکہ Overlays جیسی فلوٹنگ ونڈو میں بھی
+// نیا کوڈ/اپڈیٹ خودکار لوڈ ہوتا رہے، دستی طور پر ونڈو دوبارہ بنانے کی ضرورت نہ پڑے
+setInterval(()=>{
+  if(document.body.classList.contains('compact') && !tickerPop.classList.contains('open')){
+    location.reload();
+  }
+}, 60*1000);
 
 // ===== Offline support (PWA) =====
 if('serviceWorker' in navigator){
