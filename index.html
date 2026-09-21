@@ -52,10 +52,12 @@
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{
     margin:0; padding:0; background:#DCD3BE;
-    height:100%; overflow:hidden; overscroll-behavior:none;
+    height:100%; overflow-x:hidden; overflow-y:auto; overscroll-behavior:none;
     -webkit-user-select:none; user-select:none;
     -webkit-touch-callout:none;
   }
+  /* پٹی صرف موڈ (compact) میں سکرول کی ضرورت نہیں — اسی وقت مکمل بند رکھیں تاکہ ٹکر پر انگلی سے کھینچنا صاف رہے */
+  body.compact{ overflow:hidden; }
   body{
     font-family:var(--ui-font);
     height:100%;
@@ -225,7 +227,7 @@
     box-shadow:0 1px 3px rgba(0,0,0,.2);
   }
   .stepbtn:active{ transform:scale(.94); }
-  .stepval{ min-width:58px; text-align:center; font-family:var(--ui-font); font-size:13px; color:var(--ink); font-weight:600;}
+  .stepval{ min-width:58px; text-align:center; font-family:var(--ui-font); font-size:13px; color:var(--ink); font-weight:600; direction:ltr;}
   .posbtn{
     border:1px solid var(--brass); background:#fff; color:var(--ink);
     border-radius:9px; padding:7px 12px; font-family:var(--ui-font); font-size:12px; cursor:pointer; font-weight:600;
@@ -703,18 +705,21 @@ const BG_COLORS = [
   {name:'نیلگوں', v:'#1A2733'}, {name:'روشن', v:'#F3ECDA'}, {name:'سرخی', v:'#3A1418'},
   {name:'آسمانی', v:'#2B4C6F'}, {name:'جامنی', v:'#3B2A4A'}, {name:'زیتونی', v:'#3A3A1E'},
   {name:'قہوہ', v:'#4A2E1E'}, {name:'سلیٹی', v:'#33393E'}, {name:'گلابی', v:'#4A222E'},
+  {name:'فیروزی', v:'#1B3B3A'}, {name:'شاہی نیلا', v:'#1E2A5E'}, {name:'گہرا سرخ', v:'#5C1A1A'},
+  {name:'کالا سنہری', v:'#12130F'},
 ];
 const FG_COLORS = [
   {name:'کریمی', v:'#F3E9C9'}, {name:'سفید', v:'#FFFFFF'}, {name:'سنہری', v:'#C9A227'},
   {name:'سبز', v:'#8FB996'}, {name:'نارنجی', v:'#D98E4A'}, {name:'آسمانی', v:'#7FA8C9'},
   {name:'گلابی', v:'#E0847A'}, {name:'گہرا', v:'#2B2320'}, {name:'قہوہ', v:'#8B5E1F'},
-  {name:'سرخی', v:'#A24A3F'},
+  {name:'سرخی', v:'#A24A3F'}, {name:'فیروزی', v:'#6FC2B4'}, {name:'ارغوانی', v:'#B48AD1'},
+  {name:'زرد', v:'#E8D25A'},
 ];
 const BORDER_COLORS = [
   {name:'سنہری', v:'#C9A227'}, {name:'تانبا', v:'#D98E4A'}, {name:'گلابی سونا', v:'#E0847A'},
   {name:'چاندی', v:'#7FA8C9'}, {name:'سبز', v:'#8FB996'}, {name:'سفید', v:'#FFFFFF'},
   {name:'کانسی', v:'#8B5E1F'}, {name:'زنگی', v:'#A24A3F'}, {name:'جامنی', v:'#3B2A4A'},
-  {name:'گہرا', v:'#2B2320'},
+  {name:'گہرا', v:'#2B2320'}, {name:'فیروزی', v:'#6FC2B4'}, {name:'شاہی سنہری', v:'#E8C24A'},
 ];
 const BORDER_STYLES = [
   {name:'سادہ', v:'solid'}, {name:'ڈیشڈ', v:'dashed'}, {name:'نقطے', v:'dotted'},
@@ -982,10 +987,10 @@ function buildNoteChipPicker(containerId, list, getCurrent, onPick){
   });
 }
 function refreshNoteStylePickers(){
-  buildNoteColorPicker('noteBgRow', BG_COLORS, ()=>draftNoteStyle.bg, v=>{ draftNoteStyle.bg=v; updateNotePreview(); });
-  buildNoteColorPicker('noteFgRow', FG_COLORS, ()=>draftNoteStyle.fg, v=>{ draftNoteStyle.fg=v; updateNotePreview(); });
-  buildNoteColorPicker('noteBorderRow', BORDER_COLORS, ()=>draftNoteStyle.borderColor, v=>{ draftNoteStyle.borderColor=v; updateNotePreview(); });
-  buildNoteChipPicker('noteFontRow', FONTS, ()=>draftNoteStyle.font, v=>{ draftNoteStyle.font=v; updateNotePreview(); });
+  buildNoteColorPicker('noteBgRow', BG_COLORS, ()=>draftNoteStyle.bg, v=>{ draftNoteStyle.bg=v; updateNotePreview(); previewDraftOnBoard(); });
+  buildNoteColorPicker('noteFgRow', FG_COLORS, ()=>draftNoteStyle.fg, v=>{ draftNoteStyle.fg=v; updateNotePreview(); previewDraftOnBoard(); });
+  buildNoteColorPicker('noteBorderRow', BORDER_COLORS, ()=>draftNoteStyle.borderColor, v=>{ draftNoteStyle.borderColor=v; updateNotePreview(); previewDraftOnBoard(); });
+  buildNoteChipPicker('noteFontRow', FONTS, ()=>draftNoteStyle.font, v=>{ draftNoteStyle.font=v; updateNotePreview(); previewDraftOnBoard(); });
   const bgShadeEl = document.getElementById('noteBgShadeValue'); if(bgShadeEl) bgShadeEl.textContent = draftNoteStyle.bgShade || 0;
   const bcShadeEl = document.getElementById('noteBorderShadeValue'); if(bcShadeEl) bcShadeEl.textContent = draftNoteStyle.borderShade || 0;
   updateNotePreview();
@@ -1195,6 +1200,7 @@ function editNote(id){
   document.getElementById('noteCustomStyle').checked = !!n.style;
   document.getElementById('noteStylePanel').style.display = n.style ? 'block' : 'none';
   refreshNoteStylePickers();
+  previewDraftOnBoard();
   document.getElementById('addBtn').textContent = 'محفوظ کریں (ایڈٹ)';
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
   document.getElementById('addForm').classList.add('highlight');
@@ -1219,6 +1225,8 @@ function resetForm(){
   document.getElementById('addBtn').textContent = 'شامل کریں';
   document.getElementById('cancelEditBtn').style.display = 'none';
   document.getElementById('addForm').classList.remove('highlight');
+  currentTickerText = '';
+  updateTicker(); // پیش منظر ہٹا کر اصل پٹی واپس دکھائیں
 }
 
 function addOrSaveNote(){
@@ -1316,18 +1324,28 @@ function updateTicker(){
   }
 }
 
-// لکھتے ہی فوری طور پر اسی وقت ٹکر پر پیش منظر دکھائیں
-document.getElementById('noteText').addEventListener('input', (e)=>{
-  const draft = e.target.value.trim();
+// لکھتے ہی / رنگ چنتے ہی فوری طور پر اسی وقت اصل پٹی (اوپر) پر پیش منظر دکھائیں
+function previewDraftOnBoard(){
   const track = document.getElementById('tickerTrack');
-  if(draft){
-    track.classList.remove('empty');
-    track.innerHTML = `<div class="ticker-text" style="animation-duration:${tickerSpeed}s;">${escapeHtml(draft)}</div>`;
-    currentTickerText = '__draft__';
-  } else {
+  const typed = document.getElementById('noteText').value.trim();
+  const customOn = document.getElementById('noteCustomStyle').checked;
+  if(!typed && !customOn){
     currentTickerText = '';
     updateTicker();
+    return;
   }
+  const draft = typed || 'یہاں آپ کا پیغام اس انداز میں نظر آئے گا';
+  track.classList.remove('empty');
+  if(customOn){
+    applyNoteStyle({text:draft, style:draftNoteStyle});
+  } else {
+    restoreDefaultStyle();
+  }
+  track.innerHTML = `<div class="ticker-text" style="animation-duration:${tickerSpeed}s;">${escapeHtml(draft)}</div>`;
+  currentTickerText = '__draft__';
+}
+document.getElementById('noteText').addEventListener('input', ()=>{
+  previewDraftOnBoard();
 });
 
 /* ===== لمبا دبانے پر پاپ اوور — ایڈٹ / ڈیلیٹ / نیا شامل کریں ===== */
@@ -1484,26 +1502,27 @@ refreshNoteStylePickers();
 document.getElementById('noteCustomStyle').addEventListener('change', function(){
   document.getElementById('noteStylePanel').style.display = this.checked ? 'block' : 'none';
   updateNotePreview();
+  previewDraftOnBoard();
 });
 document.getElementById('noteBgShadeMinus').onclick = ()=>{
   draftNoteStyle.bgShade = Math.max(SHADE_MIN, (draftNoteStyle.bgShade||0) - 5);
   document.getElementById('noteBgShadeValue').textContent = draftNoteStyle.bgShade;
-  updateNotePreview();
+  updateNotePreview(); previewDraftOnBoard();
 };
 document.getElementById('noteBgShadePlus').onclick = ()=>{
   draftNoteStyle.bgShade = Math.min(SHADE_MAX, (draftNoteStyle.bgShade||0) + 5);
   document.getElementById('noteBgShadeValue').textContent = draftNoteStyle.bgShade;
-  updateNotePreview();
+  updateNotePreview(); previewDraftOnBoard();
 };
 document.getElementById('noteBorderShadeMinus').onclick = ()=>{
   draftNoteStyle.borderShade = Math.max(SHADE_MIN, (draftNoteStyle.borderShade||0) - 5);
   document.getElementById('noteBorderShadeValue').textContent = draftNoteStyle.borderShade;
-  updateNotePreview();
+  updateNotePreview(); previewDraftOnBoard();
 };
 document.getElementById('noteBorderShadePlus').onclick = ()=>{
   draftNoteStyle.borderShade = Math.min(SHADE_MAX, (draftNoteStyle.borderShade||0) + 5);
   document.getElementById('noteBorderShadeValue').textContent = draftNoteStyle.borderShade;
-  updateNotePreview();
+  updateNotePreview(); previewDraftOnBoard();
 };
 
 document.getElementById('speedMinus').onclick = ()=>{
