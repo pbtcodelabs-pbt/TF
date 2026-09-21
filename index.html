@@ -83,6 +83,10 @@
     width:100%;
     border-top:var(--border-top-w,0px) var(--border-style,solid) var(--border-top-color,#C9A227);
     border-bottom:var(--border-bottom-w,4px) var(--border-style,solid) var(--border-bottom-color,#C9A227);
+    border-image-source:var(--border-img-src, none);
+    border-image-slice:50% 0 50% 0;
+    border-image-width:1;
+    border-image-repeat:round;
     padding-top:env(safe-area-inset-top);
     touch-action:none;
     -webkit-user-select:none; user-select:none;
@@ -102,19 +106,19 @@
   }
   .ticker-text{
     position:absolute;
-    top:50%;
+    top:var(--txt-top,50%);
     left:0;
     white-space:nowrap;
     font-size:var(--ticker-size);
     font-family:var(--content-font);
     color:var(--board-ink);
     animation:scroll-rtl linear infinite;
-    transform:translateY(-50%) translateX(-100%);
+    transform:translateY(var(--txt-ty,-50%)) translateX(-100%);
   }
   .ticker-track.paused .ticker-text{ animation-play-state:paused; }
   @keyframes scroll-rtl{
-    from{ transform:translateY(-50%) translateX(-100%); }
-    to{ transform:translateY(-50%) translateX(100%); }
+    from{ transform:translateY(var(--txt-ty,-50%)) translateX(-100%); }
+    to{ transform:translateY(var(--txt-ty,-50%)) translateX(100%); }
   }
   /* ===== پٹی صرف موڈ — باقی پورا ایپ چھپا رہتا ہے، صرف پٹی نظر آتی ہے ===== */
   body.compact .app{ display:none; }
@@ -203,7 +207,7 @@
   .row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
   .srow{
     display:flex; align-items:center; justify-content:space-between;
-    gap:10px; padding:11px 0; border-bottom:1px solid var(--line);
+    gap:10px; padding:8px 0; border-bottom:1px solid var(--line);
   }
   .srow:last-child{ border-bottom:none; }
   .srow .slabel{
@@ -235,14 +239,15 @@
   }
   .swatch.active{ border-color:var(--brass); box-shadow:0 0 0 2px var(--brass), 0 1px 4px rgba(0,0,0,.2); }
   .theme-item span{ font-size:10px; color:#8b8578; font-family:var(--ui-font); }
-  .srow-col{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .srow-col{ flex-direction:column; align-items:flex-start; gap:6px; padding:6px 0; }
   .srow-col .scontrol{ width:100%; justify-content:flex-start; }
-  .swatch-pick{ display:flex; gap:9px; flex-wrap:wrap; }
-  .swatch-pick .swatch{ width:28px; height:28px; border-radius:8px; }
-  .chip-pick{ display:flex; gap:7px; flex-wrap:wrap; }
+  .swatch-pick{ display:grid; grid-template-columns:repeat(auto-fill,minmax(30px,1fr)); gap:6px; width:100%; }
+  .swatch-pick .swatch{ width:100%; aspect-ratio:1/1; height:auto; border-radius:8px; min-width:24px; }
+  .chip-pick{ display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:6px; width:100%; }
   .chip-pick .chip{
-    padding:7px 12px; border-radius:20px; border:1px solid var(--line); background:#fff;
-    font-family:var(--ui-font); font-size:12px; cursor:pointer; color:var(--ink);
+    padding:6px 6px; border-radius:14px; border:1px solid var(--line); background:#fff;
+    font-family:var(--ui-font); font-size:11px; cursor:pointer; color:var(--ink);
+    text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .chip-pick .chip.active{ background:var(--brass); border-color:var(--brass); color:#2b2320; font-weight:700; }
   select, input[type=text], input[type=time]{
@@ -365,11 +370,15 @@
 
   <div class="settings" id="settingsPanel">
     <div class="srow srow-col">
-      <span class="slabel">پٹی کا بیک گراؤنڈ رنگ</span>
+      <span class="slabel">پٹی کا انداز</span>
+      <div class="scontrol chip-pick" id="styleModeRow"></div>
+    </div>
+    <div class="srow srow-col">
+      <span class="slabel">پٹی کا بیک گراؤنڈ رنگ (ڈیفالٹ)</span>
       <div class="scontrol swatch-pick" id="bgRow"></div>
     </div>
     <div class="srow srow-col">
-      <span class="slabel">لکھائی کا رنگ</span>
+      <span class="slabel">لکھائی کا رنگ (ڈیفالٹ)</span>
       <div class="scontrol swatch-pick" id="fgRow"></div>
     </div>
     <div class="srow srow-col">
@@ -389,8 +398,20 @@
       <div class="scontrol chip-pick" id="sizeRow"></div>
     </div>
     <div class="srow">
-      <span class="slabel">پیغامات کا فاصلہ</span>
-      <div class="scontrol chip-pick" id="gapRow"></div>
+      <span class="slabel">رنگ کی گہرائی (− ہلکا / + گہرا)</span>
+      <div class="scontrol">
+        <button type="button" class="stepbtn" id="shadeMinus">−</button>
+        <span class="stepval" id="shadeValue">0</span>
+        <button type="button" class="stepbtn" id="shadePlus">+</button>
+      </div>
+    </div>
+    <div class="srow">
+      <span class="slabel">پیغامات کا درمیانی فاصلہ (ہندسوں میں)</span>
+      <div class="scontrol">
+        <button type="button" class="stepbtn" id="gapMinus">−</button>
+        <span class="stepval" id="gapValue">3</span>
+        <button type="button" class="stepbtn" id="gapPlus">+</button>
+      </div>
     </div>
     <div class="srow">
       <span class="slabel">پٹی کی شفافیت (− شفاف / + گہری)</span>
@@ -399,6 +420,10 @@
         <span class="stepval" id="opacityValue">100%</span>
         <button type="button" class="stepbtn" id="opacityPlus">+</button>
       </div>
+    </div>
+    <div class="srow srow-col">
+      <span class="slabel">لکھائی کی سیدھ (پٹی میں کہاں دکھے)</span>
+      <div class="scontrol chip-pick" id="textAlignRow"></div>
     </div>
     <div class="srow">
       <span class="slabel">اوپر بارڈر</span>
@@ -409,15 +434,19 @@
       <div class="scontrol"><input type="checkbox" id="borderBottomOn" checked></div>
     </div>
     <div class="srow srow-col">
-      <span class="slabel">بارڈر کا رنگ</span>
+      <span class="slabel">بارڈر کا رنگ (ڈیفالٹ)</span>
       <div class="scontrol swatch-pick" id="borderColorRow"></div>
     </div>
     <div class="srow srow-col">
-      <span class="slabel">بارڈر کا انداز</span>
+      <span class="slabel">بارڈر کا سادہ انداز</span>
       <div class="scontrol chip-pick" id="borderStyleRow"></div>
     </div>
+    <div class="srow srow-col">
+      <span class="slabel">خوبصورت بارڈر ٹیمپلیٹ</span>
+      <div class="scontrol chip-pick" id="borderTemplateRow"></div>
+    </div>
     <div class="srow">
-      <span class="slabel">موٹائی (− پتلی / + موٹی)</span>
+      <span class="slabel">پٹی کی اونچائی (− پتلی / + موٹی)</span>
       <div class="scontrol">
         <button type="button" class="stepbtn" id="thickMinus">−</button>
         <span class="stepval" id="thickValue">0</span>
@@ -458,6 +487,28 @@
     <label class="cont-check">
       <input type="checkbox" id="noteContinuous"> شروع ہونے کے بعد مسلسل چلتا رہے (ختم وقت کی ضرورت نہیں)
     </label>
+
+    <label class="cont-check">
+      <input type="checkbox" id="noteCustomStyle"> اس پیغام کے لیے علیحدہ رنگ/بارڈر/فونٹ مقرر کریں
+    </label>
+    <div id="noteStylePanel" style="display:none; background:#F3ECDA; border:1px solid var(--line); border-radius:10px; padding:8px 10px;">
+      <div class="srow srow-col">
+        <span class="slabel">بیک گراؤنڈ</span>
+        <div class="scontrol swatch-pick" id="noteBgRow"></div>
+      </div>
+      <div class="srow srow-col">
+        <span class="slabel">لکھائی کا رنگ</span>
+        <div class="scontrol swatch-pick" id="noteFgRow"></div>
+      </div>
+      <div class="srow srow-col">
+        <span class="slabel">بارڈر کا رنگ</span>
+        <div class="scontrol swatch-pick" id="noteBorderRow"></div>
+      </div>
+      <div class="srow srow-col" style="border-bottom:none;">
+        <span class="slabel">فونٹ</span>
+        <div class="scontrol chip-pick" id="noteFontRow"></div>
+      </div>
+    </div>
 
     <div class="addform-row">
       <button class="btn btn-primary" id="addBtn">شامل کریں</button>
@@ -651,14 +702,50 @@ const BORDER_STYLES = [
   {name:'سادہ', v:'solid'}, {name:'ڈیشڈ', v:'dashed'}, {name:'نقطے', v:'dotted'},
   {name:'ڈبل لائن', v:'double'}, {name:'نقش (Groove)', v:'groove'}, {name:'رج (Ridge)', v:'ridge'},
 ];
+// خوبصورت بارڈر ٹیمپلیٹ — SVG سے بنے ہوئے پیٹرن، رنگ خودکار بارڈر کلر کے مطابق
+const BORDER_TEMPLATES = [
+  {name:'کوئی نہیں', v:'none'},
+  {name:'🍃 پتیاں', v:'leaf'},
+  {name:'🌸 پھول دار', v:'floral'},
+  {name:'≡ تین لکیریں', v:'triple'},
+  {name:'•• گول نقطے', v:'dots'},
+  {name:'〜 لہریں', v:'wave'},
+  {name:'⚡ زگ زیگ', v:'zigzag'},
+  {name:'♦ ہیرا چین', v:'diamond'},
+];
+function borderTemplateSVG(key, color){
+  const c = color || '#C9A227';
+  const wrap = (inner, w, h) => `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>${inner}</svg>`;
+  switch(key){
+    case 'leaf':
+      return wrap(`<path d='M4 6 Q10 0 16 6 Q10 12 4 6 Z' fill='${c}'/><path d='M4 26 Q10 32 16 26 Q10 20 4 26 Z' fill='${c}'/>`, 20, 32);
+    case 'floral':
+      return wrap(`<circle cx='10' cy='6' r='3' fill='${c}'/><circle cx='10' cy='6' r='1.1' fill='#fff'/><circle cx='10' cy='26' r='3' fill='${c}'/><circle cx='10' cy='26' r='1.1' fill='#fff'/>`, 20, 32);
+    case 'triple':
+      return wrap(`<rect y='1' width='16' height='1.6' fill='${c}'/><rect y='6' width='16' height='1.6' fill='${c}'/><rect y='11' width='16' height='1.6' fill='${c}'/><rect y='21' width='16' height='1.6' fill='${c}'/><rect y='26' width='16' height='1.6' fill='${c}'/><rect y='31' width='16' height='1.6' fill='${c}'/>`, 16, 32);
+    case 'dots':
+      return wrap(`<circle cx='8' cy='6' r='3' fill='${c}'/><circle cx='8' cy='26' r='3' fill='${c}'/>`, 16, 32);
+    case 'wave':
+      return wrap(`<path d='M0 6 Q8 -1 16 6 T32 6' stroke='${c}' stroke-width='2' fill='none'/><path d='M0 26 Q8 33 16 26 T32 26' stroke='${c}' stroke-width='2' fill='none'/>`, 32, 32);
+    case 'zigzag':
+      return wrap(`<polyline points='0,10 5,1 10,10 15,1 20,10' stroke='${c}' stroke-width='2' fill='none'/><polyline points='0,22 5,31 10,22 15,31 20,22' stroke='${c}' stroke-width='2' fill='none'/>`, 20, 32);
+    case 'diamond':
+      return wrap(`<rect x='4' y='2' width='8' height='8' fill='${c}' transform='rotate(45 8 6)'/><rect x='4' y='22' width='8' height='8' fill='${c}' transform='rotate(45 8 26)'/>`, 16, 32);
+    default: return null;
+  }
+}
 const FONTS = [
   {name:'نوری نستعلیق', v:'Jameel Noori Nastaleeq'},
   {name:'نوری — کشیدہ', v:'Jameel Noori Nastaleeq Kasheeda'},
   {name:'اے اے سمیر الماس', v:'AA Sameer Almas'},
   {name:'نفیس نسخ', v:'Nafees Naskh'},
 ];
-const SIZES = [ {name:'چھوٹا', v:'18'}, {name:'درمیانہ', v:'24'}, {name:'بڑا', v:'30'} ];
-const GAPS = [ {name:'کم', v:'compact'}, {name:'درمیانہ', v:'normal'}, {name:'زیادہ', v:'wide'} ];
+const SIZES = [
+  {name:'باریک', v:'14'}, {name:'چھوٹا', v:'18'}, {name:'درمیانہ', v:'24'},
+  {name:'بڑا', v:'30'}, {name:'بہت بڑا', v:'36'},
+];
+const TEXT_ALIGNS = [ {name:'اوپر', v:'top'}, {name:'درمیان', v:'middle'}, {name:'نیچے', v:'bottom'} ];
+const STYLE_MODES = [ {name:'ڈیفالٹ (ایک ہی انداز)', v:'default'}, {name:'ہر میسج کا علیحدہ انداز', v:'perMessage'} ];
 const DAYS = [
   {v:0,l:'اتوار'}, {v:1,l:'پیر'}, {v:2,l:'منگل'}, {v:3,l:'بدھ'},
   {v:4,l:'جمعرات'}, {v:5,l:'جمعہ'}, {v:6,l:'ہفتہ'}
@@ -669,13 +756,13 @@ let editingId = null;
 let selectedDays = [];
 let applyingFromCloud = false; // true جب سیٹنگز آن لائن سے لگ رہی ہوں — تاکہ اسی وقت دوبارہ اپ لوڈ نہ ہو
 let tickerSpeed = 14; // سیکنڈز — کم نمبر = تیز رفتار، زیادہ نمبر = آہستہ
-const SPEED_MIN = 3, SPEED_MAX = 60;
+const SPEED_MIN = 3, SPEED_MAX = 120;
 function updateSpeedDisplay(){
   const el = document.getElementById('speedValue');
   if(el) el.textContent = tickerSpeed + ' سیکنڈ';
 }
-let barExtraH = 0; // px — پٹی کی اضافی موٹائی (اوپر نیچے)، فونٹ سائز کے علاوہ
-const THICK_MIN = -20, THICK_MAX = 60;
+let barExtraH = 0; // px — پٹی کی اضافی اونچائی (اوپر نیچے)، فونٹ سائز کے علاوہ
+const THICK_MIN = -40, THICK_MAX = 90;
 function updateThickDisplay(){
   const el = document.getElementById('thickValue');
   if(el) el.textContent = barExtraH;
@@ -684,16 +771,23 @@ function updateThickDisplay(){
 let curSize = '24';
 function updateTickerHeight(){
   const fontPx = parseInt(curSize) || 24;
-  const h = Math.max(28, fontPx + 28 + barExtraH);
+  const h = Math.max(20, fontPx + 20 + barExtraH);
   document.documentElement.style.setProperty('--ticker-h', h + 'px');
 }
 // ===== موجودہ حالت — سب کچھ کلک/چپ سے چنا جاتا ہے، native picker کی ضرورت نہیں =====
 let curBg = '#1F2E2B';
 let curFg = '#F3E9C9';
 let curFont = 'Jameel Noori Nastaleeq';
-let curGap = 'normal';
+let curGap = 3; // ہندسوں میں — کتنی جگہ دو پیغامات کے درمیان چھوڑنی ہے
+const GAP_MIN = 0, GAP_MAX = 15;
 let curBorderColor = '#C9A227';
 let curBorderStyle = 'solid';
+let curBorderTemplate = 'none';
+let curTextAlign = 'middle';
+let curStyleMode = 'default'; // default = سب کے لیے ایک انداز | perMessage = ہر میسج کا اپنا انداز
+let draftNoteStyle = {bg:null, fg:null, borderColor:null, font:null};
+let curBgShade = 0; // -50 (ہلکا) .. +50 (گہرا)
+const SHADE_MIN = -50, SHADE_MAX = 50;
 let boardOpacity = 100; // فیصد — 0 = بالکل شفاف، 100 = مکمل گہری
 function hexToRgba(hex, pct){
   hex = (hex||'#000000').replace('#','');
@@ -701,13 +795,73 @@ function hexToRgba(hex, pct){
   const r = parseInt(hex.substr(0,2),16)||0, g = parseInt(hex.substr(2,2),16)||0, b = parseInt(hex.substr(4,2),16)||0;
   return `rgba(${r},${g},${b},${Math.max(0,Math.min(100,pct))/100})`;
 }
+function hexToHsl(hex){
+  hex = (hex||'#000000').replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  let r = (parseInt(hex.substr(0,2),16)||0)/255, g = (parseInt(hex.substr(2,2),16)||0)/255, b = (parseInt(hex.substr(4,2),16)||0)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h=0, s=0, l=(max+min)/2;
+  if(max!==min){
+    const d = max-min;
+    s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){
+      case r: h=(g-b)/d + (g<b?6:0); break;
+      case g: h=(b-r)/d + 2; break;
+      case b: h=(r-g)/d + 4; break;
+    }
+    h/=6;
+  }
+  return [h*360, s*100, l*100];
+}
+function hslToHex(h,s,l){
+  h/=360; s/=100; l/=100;
+  let r,g,b;
+  if(s===0){ r=g=b=l; }
+  else{
+    const hue2rgb=(p,q,t)=>{
+      if(t<0) t+=1; if(t>1) t-=1;
+      if(t<1/6) return p+(q-p)*6*t;
+      if(t<1/2) return q;
+      if(t<2/3) return p+(q-p)*(2/3-t)*6;
+      return p;
+    };
+    const q = l<0.5 ? l*(1+s) : l+s-l*s;
+    const p = 2*l-q;
+    r = hue2rgb(p,q,h+1/3); g = hue2rgb(p,q,h); b = hue2rgb(p,q,h-1/3);
+  }
+  const toHex = v => Math.round(v*255).toString(16).padStart(2,'0');
+  return '#'+toHex(r)+toHex(g)+toHex(b);
+}
+function shadeColor(hex, delta){
+  if(!delta) return hex;
+  const [h,s,l] = hexToHsl(hex);
+  const nl = Math.min(95, Math.max(5, l + delta));
+  return hslToHex(h,s,nl);
+}
 function applyBoardColor(){
-  document.documentElement.style.setProperty('--board', hexToRgba(curBg, boardOpacity));
+  const effective = shadeColor(curBg, curBgShade);
+  document.documentElement.style.setProperty('--board', hexToRgba(effective, boardOpacity));
 }
 function updateOpacityDisplay(){
   const el = document.getElementById('opacityValue');
   if(el) el.textContent = boardOpacity + '%';
   applyBoardColor();
+}
+function updateShadeDisplay(){
+  const el = document.getElementById('shadeValue');
+  if(el) el.textContent = curBgShade;
+  applyBoardColor();
+}
+function updateGapDisplay(){
+  const el = document.getElementById('gapValue');
+  if(el) el.textContent = curGap;
+}
+function setTextAlign(v){
+  curTextAlign = v;
+  const root = document.documentElement.style;
+  if(v==='top'){ root.setProperty('--txt-top','6px'); root.setProperty('--txt-ty','0%'); }
+  else if(v==='bottom'){ root.setProperty('--txt-top','calc(100% - 6px)'); root.setProperty('--txt-ty','-100%'); }
+  else { root.setProperty('--txt-top','50%'); root.setProperty('--txt-ty','-50%'); }
 }
 // ===== ری یوز ایبل بلڈرز: رنگ پیلٹ اور چپ لسٹ =====
 function buildSwatchPicker(containerId, list, getCurrent, onPick){
@@ -748,6 +902,113 @@ function buildChipPicker(containerId, list, getCurrent, onPick){
   });
 }
 
+// ===== فی میسج رنگ/فونٹ چننے والے پکرز — پہلا آپشن ہمیشہ "ڈیفالٹ" (یعنی گلوبل سیٹنگ استعمال ہو) =====
+function buildNoteColorPicker(containerId, list, getCurrent, onPick){
+  const row = document.getElementById(containerId);
+  if(!row) return;
+  row.innerHTML = '';
+  const noneDiv = document.createElement('div');
+  noneDiv.className = 'swatch';
+  noneDiv.style.background = '#fff';
+  noneDiv.style.border = '2px dashed #b6ad98';
+  noneDiv.style.display = 'flex'; noneDiv.style.alignItems = 'center'; noneDiv.style.justifyContent = 'center';
+  noneDiv.style.fontSize = '13px'; noneDiv.style.color = '#8b8578';
+  noneDiv.textContent = '✕';
+  noneDiv.title = 'ڈیفالٹ (نہ بدلیں)';
+  if(!getCurrent()) noneDiv.classList.add('active');
+  noneDiv.onclick = ()=>{
+    row.querySelectorAll('.swatch').forEach(c=>c.classList.remove('active'));
+    noneDiv.classList.add('active');
+    onPick(null);
+  };
+  row.appendChild(noneDiv);
+  list.forEach(item=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch';
+    sw.style.background = item.v;
+    sw.title = item.name;
+    if(item.v.toUpperCase() === (getCurrent()||'').toUpperCase()) sw.classList.add('active');
+    sw.onclick = ()=>{
+      row.querySelectorAll('.swatch').forEach(c=>c.classList.remove('active'));
+      sw.classList.add('active');
+      onPick(item.v);
+    };
+    row.appendChild(sw);
+  });
+}
+function buildNoteChipPicker(containerId, list, getCurrent, onPick){
+  const row = document.getElementById(containerId);
+  if(!row) return;
+  row.innerHTML = '';
+  const noneChip = document.createElement('div');
+  noneChip.className = 'chip';
+  noneChip.textContent = 'ڈیفالٹ';
+  if(!getCurrent()) noneChip.classList.add('active');
+  noneChip.onclick = ()=>{
+    row.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    noneChip.classList.add('active');
+    onPick(null);
+  };
+  row.appendChild(noneChip);
+  list.forEach(item=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = item.name;
+    if(item.v === getCurrent()) chip.classList.add('active');
+    chip.onclick = ()=>{
+      row.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      onPick(item.v);
+    };
+    row.appendChild(chip);
+  });
+}
+function refreshNoteStylePickers(){
+  buildNoteColorPicker('noteBgRow', BG_COLORS, ()=>draftNoteStyle.bg, v=>{ draftNoteStyle.bg=v; });
+  buildNoteColorPicker('noteFgRow', FG_COLORS, ()=>draftNoteStyle.fg, v=>{ draftNoteStyle.fg=v; });
+  buildNoteColorPicker('noteBorderRow', BORDER_COLORS, ()=>draftNoteStyle.borderColor, v=>{ draftNoteStyle.borderColor=v; });
+  buildNoteChipPicker('noteFontRow', FONTS, ()=>draftNoteStyle.font, v=>{ draftNoteStyle.font=v; });
+}
+// اس میسج کا مقرر کردہ انداز پٹی پر لگائیں (جو فیلڈ سیٹ نہیں وہ ڈیفالٹ سیٹنگ سے آئے گی)
+function applyNoteStyle(note){
+  const st = (note && note.style) || {};
+  const bg = st.bg || curBg;
+  const fg = st.fg || curFg;
+  const bc = st.borderColor || curBorderColor;
+  const fnt = st.font || curFont;
+  const effBg = shadeColor(bg, curBgShade);
+  const root = document.documentElement.style;
+  root.setProperty('--board', hexToRgba(effBg, boardOpacity));
+  root.setProperty('--board-ink', fg);
+  root.setProperty('--content-font', `'${fnt}', serif`);
+  const topOn = document.getElementById('borderTopOn').checked;
+  const botOn = document.getElementById('borderBottomOn').checked;
+  if(curBorderTemplate && curBorderTemplate !== 'none'){
+    const svg = borderTemplateSVG(curBorderTemplate, bc);
+    const uri = svg ? `url("data:image/svg+xml,${encodeURIComponent(svg)}")` : 'none';
+    root.setProperty('--border-top-w', topOn ? '14px' : '0px');
+    root.setProperty('--border-bottom-w', botOn ? '14px' : '0px');
+    root.setProperty('--border-top-color', 'transparent');
+    root.setProperty('--border-bottom-color', 'transparent');
+    root.setProperty('--border-style', 'solid');
+    root.setProperty('--border-img-src', uri);
+  } else {
+    root.setProperty('--border-top-w', topOn ? '4px' : '0px');
+    root.setProperty('--border-bottom-w', botOn ? '4px' : '0px');
+    root.setProperty('--border-top-color', bc);
+    root.setProperty('--border-bottom-color', bc);
+    root.setProperty('--border-style', curBorderStyle);
+    root.setProperty('--border-img-src', 'none');
+  }
+}
+// ڈیفالٹ (گلوبل) انداز واپس لگائیں
+function restoreDefaultStyle(){
+  applyBoardColor();
+  document.documentElement.style.setProperty('--board-ink', curFg);
+  document.documentElement.style.setProperty('--content-font', `'${curFont}', serif`);
+  applyBorders();
+}
+
 function uid(){ return 'n' + Date.now() + Math.random().toString(36).slice(2,7); }
 
 /* ===== localStorage — آف لائن کاپی، فوری لوڈ کے لیے ===== */
@@ -784,10 +1045,14 @@ function currentSettings(){
     fg: curFg,
     gap: curGap,
     opacity: boardOpacity,
+    bgShade: curBgShade,
+    textAlign: curTextAlign,
+    styleMode: curStyleMode,
     borderTopOn: document.getElementById('borderTopOn').checked,
     borderBottomOn: document.getElementById('borderBottomOn').checked,
     borderColor: curBorderColor,
     borderStyle: curBorderStyle,
+    borderTemplate: curBorderTemplate,
     posTop: boardTop,
     thickness: barExtraH,
   };
@@ -884,6 +1149,10 @@ function editNote(id){
   document.getElementById('noteContinuous').checked = !!n.continuous;
   selectedDays = (n.days || []).slice();
   renderDayChips();
+  draftNoteStyle = Object.assign({bg:null, fg:null, borderColor:null, font:null}, n.style || {});
+  document.getElementById('noteCustomStyle').checked = !!n.style;
+  document.getElementById('noteStylePanel').style.display = n.style ? 'block' : 'none';
+  refreshNoteStylePickers();
   document.getElementById('addBtn').textContent = 'محفوظ کریں (ایڈٹ)';
   document.getElementById('cancelEditBtn').style.display = 'inline-block';
   document.getElementById('addForm').classList.add('highlight');
@@ -901,6 +1170,10 @@ function resetForm(){
   document.getElementById('noteContinuous').checked = false;
   selectedDays = [];
   renderDayChips();
+  draftNoteStyle = {bg:null, fg:null, borderColor:null, font:null};
+  document.getElementById('noteCustomStyle').checked = false;
+  document.getElementById('noteStylePanel').style.display = 'none';
+  refreshNoteStylePickers();
   document.getElementById('addBtn').textContent = 'شامل کریں';
   document.getElementById('cancelEditBtn').style.display = 'none';
   document.getElementById('addForm').classList.remove('highlight');
@@ -913,12 +1186,13 @@ function addOrSaveNote(){
   const endTime = document.getElementById('noteEnd').value;
   const continuous = document.getElementById('noteContinuous').checked;
   const days = selectedDays.slice();
+  const style = document.getElementById('noteCustomStyle').checked ? Object.assign({}, draftNoteStyle) : null;
 
   if(editingId){
     const n = notes.find(x=>x.id===editingId);
-    if(n){ Object.assign(n, {text, startTime, endTime, continuous, days}); }
+    if(n){ Object.assign(n, {text, startTime, endTime, continuous, days, style}); }
   } else {
-    notes.unshift({id:uid(), text, startTime, endTime, continuous, days, done:false});
+    notes.unshift({id:uid(), text, startTime, endTime, continuous, days, done:false, style});
   }
   resetForm();
   saveNotes();
@@ -943,14 +1217,49 @@ function renderDayChips(){
   });
 }
 
-/* ===== ٹکر — ہر وقت وہی پیغامات دکھائے جو ابھی "چل رہے" ہیں ===== */
+/* ===== ٹکر — ہر وقت وہی پیغامات دکھائے جو ابھی "چل رہے" ہیں =====
+   ڈیفالٹ موڈ: سب پیغامات ایک ساتھ ایک ہی انداز میں مسلسل چلتے ہیں۔
+   پرمیسج موڈ: ایک ایک پیغام باری باری اپنے اپنے (یا ڈیفالٹ) انداز کے ساتھ مکمل گزرتا ہے،
+   پورا گزرنے کے بعد اگلے پیغام کا انداز خودکار لگ جاتا ہے۔ ===== */
 let currentTickerText = '';
+let cycleIndex = 0;
+let cycleRunning = false;
+function onCycleAnimEnd(){
+  cycleIndex++;
+  playCycleMessage();
+}
+function playCycleMessage(){
+  const track = document.getElementById('tickerTrack');
+  if(track.classList.contains('paused')){ cycleRunning = false; return; }
+  const live = notes.filter(isActiveNow);
+  if(!live.length){
+    track.classList.add('empty');
+    track.innerHTML = '<div class="ticker-placeholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>';
+    restoreDefaultStyle();
+    cycleRunning = false;
+    return;
+  }
+  track.classList.remove('empty');
+  if(cycleIndex >= live.length || cycleIndex < 0) cycleIndex = 0;
+  const note = live[cycleIndex];
+  applyNoteStyle(note);
+  cycleRunning = true;
+  track.innerHTML = `<div class="ticker-text" style="animation-duration:${tickerSpeed}s; animation-iteration-count:1;">${escapeHtml(note.text)}</div>`;
+  const txt = track.querySelector('.ticker-text');
+  if(txt) txt.addEventListener('animationend', onCycleAnimEnd, {once:true});
+}
 function updateTicker(){
   const track = document.getElementById('tickerTrack');
   if(track.classList.contains('paused')) return; // پاپ اوور کھلا ہو تو مت چھیڑیں
+  if(curStyleMode === 'perMessage'){
+    if(!cycleRunning) playCycleMessage(); // جاری میسج کو بیچ میں مت کاٹیں، خود بخود اگلے پر چلا جائے گا
+    return;
+  }
+  cycleRunning = false;
+  restoreDefaultStyle();
   const live = notes.filter(isActiveNow);
-  const gapMap = { compact:'  •  ', normal:'   •   ', wide:'        •        ' };
-  const sep = gapMap[curGap] || gapMap.normal;
+  const spaces = ' '.repeat(Math.max(0, curGap)); // non-breaking space — تاکہ فاصلہ واقعی نظر آئے
+  const sep = spaces + '•' + spaces;
   const combined = live.map(n=>n.text).join(sep);
   if(!combined){
     track.classList.add('empty');
@@ -1103,6 +1412,10 @@ buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{
   curBorderStyle = v;
   applyBorders();
 });
+buildChipPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{
+  curBorderTemplate = v;
+  applyBorders();
+});
 buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{
   curFont = v;
   document.documentElement.style.setProperty('--content-font', `'${v}', serif`);
@@ -1116,10 +1429,18 @@ buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{
   currentTickerText = '';
   updateTicker();
 });
-buildChipPicker('gapRow', GAPS, ()=>curGap, (v)=>{
-  curGap = v;
+buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{
+  setTextAlign(v);
+});
+buildChipPicker('styleModeRow', STYLE_MODES, ()=>curStyleMode, (v)=>{
+  curStyleMode = v;
+  cycleIndex = 0; cycleRunning = false;
   currentTickerText = '';
   updateTicker();
+});
+refreshNoteStylePickers();
+document.getElementById('noteCustomStyle').addEventListener('change', function(){
+  document.getElementById('noteStylePanel').style.display = this.checked ? 'block' : 'none';
 });
 
 document.getElementById('speedMinus').onclick = ()=>{
@@ -1133,13 +1454,13 @@ document.getElementById('speedPlus').onclick = ()=>{
   currentTickerText=''; updateTicker(); persistSettings();
 };
 document.getElementById('thickMinus').onclick = ()=>{
-  barExtraH = Math.max(THICK_MIN, barExtraH - 4);
+  barExtraH = Math.max(THICK_MIN, barExtraH - 3);
   updateThickDisplay();
   setTimeout(()=>setBoardTop(boardTop), 0); // دوبارہ حد میں رکھیں
   persistSettings();
 };
 document.getElementById('thickPlus').onclick = ()=>{
-  barExtraH = Math.min(THICK_MAX, barExtraH + 4);
+  barExtraH = Math.min(THICK_MAX, barExtraH + 3);
   updateThickDisplay();
   setTimeout(()=>setBoardTop(boardTop), 0);
   persistSettings();
@@ -1153,6 +1474,26 @@ document.getElementById('opacityPlus').onclick = ()=>{
   boardOpacity = Math.min(100, boardOpacity + 5);
   updateOpacityDisplay();
   persistSettings();
+};
+document.getElementById('shadeMinus').onclick = ()=>{
+  curBgShade = Math.max(SHADE_MIN, curBgShade - 5);
+  updateShadeDisplay();
+  persistSettings();
+};
+document.getElementById('shadePlus').onclick = ()=>{
+  curBgShade = Math.min(SHADE_MAX, curBgShade + 5);
+  updateShadeDisplay();
+  persistSettings();
+};
+document.getElementById('gapMinus').onclick = ()=>{
+  curGap = Math.max(GAP_MIN, curGap - 1);
+  updateGapDisplay();
+  currentTickerText=''; updateTicker(); persistSettings();
+};
+document.getElementById('gapPlus').onclick = ()=>{
+  curGap = Math.min(GAP_MAX, curGap + 1);
+  updateGapDisplay();
+  currentTickerText=''; updateTicker(); persistSettings();
 };
 
 document.getElementById('addBtn').onclick = addOrSaveNote;
@@ -1173,10 +1514,14 @@ function applySettingsObj(s){
   if(s.font){ curFont = s.font; document.documentElement.style.setProperty('--content-font', `'${s.font}', serif`); }
   if(s.speed){ tickerSpeed = parseInt(s.speed) || 14; }
   if(s.size){ curSize = s.size; document.documentElement.style.setProperty('--ticker-size', s.size + 'px'); }
-  if(s.gap){ curGap = s.gap; }
+  if(s.gap !== undefined){ curGap = parseInt(s.gap); if(isNaN(curGap)) curGap = 3; }
   if(s.borderColor){ curBorderColor = s.borderColor; }
   if(s.borderStyle){ curBorderStyle = s.borderStyle; }
+  if(s.borderTemplate){ curBorderTemplate = s.borderTemplate; }
   if(s.opacity !== undefined){ boardOpacity = parseInt(s.opacity) || 100; }
+  if(s.bgShade !== undefined){ curBgShade = parseInt(s.bgShade) || 0; }
+  setTextAlign(s.textAlign || 'middle');
+  curStyleMode = s.styleMode || 'default';
   document.getElementById('borderTopOn').checked = !!s.borderTopOn;
   document.getElementById('borderBottomOn').checked = (s.borderBottomOn !== undefined) ? !!s.borderBottomOn : true;
 
@@ -1185,14 +1530,21 @@ function applySettingsObj(s){
   buildSwatchPicker('fgRow', FG_COLORS, ()=>curFg, (v)=>{ curFg=v; document.documentElement.style.setProperty('--board-ink', v); });
   buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{ curBorderColor=v; applyBorders(); });
   buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{ curBorderStyle=v; applyBorders(); });
+  buildChipPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{ curBorderTemplate=v; applyBorders(); });
   buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{ curFont=v; document.documentElement.style.setProperty('--content-font', `'${v}', serif`); currentTickerText=''; updateTicker(); });
   buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{ curSize=v; document.documentElement.style.setProperty('--ticker-size', v+'px'); updateTickerHeight(); currentTickerText=''; updateTicker(); });
-  buildChipPicker('gapRow', GAPS, ()=>curGap, (v)=>{ curGap=v; currentTickerText=''; updateTicker(); });
+  buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{ setTextAlign(v); });
+  buildChipPicker('styleModeRow', STYLE_MODES, ()=>curStyleMode, (v)=>{ curStyleMode=v; cycleIndex=0; cycleRunning=false; currentTickerText=''; updateTicker(); });
 
   applyBoardColor();
   applyBorders();
   updateSpeedDisplay();
   updateOpacityDisplay();
+  updateShadeDisplay();
+  updateGapDisplay();
+  cycleIndex = 0; cycleRunning = false;
+  currentTickerText = '';
+  updateTicker();
   if(s.thickness !== undefined){ barExtraH = parseInt(s.thickness) || 0; }
   updateThickDisplay();
   if(s.posTop !== undefined){ setBoardTop(s.posTop); }
@@ -1201,11 +1553,24 @@ function applySettingsObj(s){
 function applyBorders(){
   const topOn = document.getElementById('borderTopOn').checked;
   const botOn = document.getElementById('borderBottomOn').checked;
-  document.documentElement.style.setProperty('--border-top-w', topOn ? '4px' : '0px');
-  document.documentElement.style.setProperty('--border-bottom-w', botOn ? '4px' : '0px');
-  document.documentElement.style.setProperty('--border-top-color', curBorderColor);
-  document.documentElement.style.setProperty('--border-bottom-color', curBorderColor);
-  document.documentElement.style.setProperty('--border-style', curBorderStyle);
+  const root = document.documentElement.style;
+  if(curBorderTemplate && curBorderTemplate !== 'none'){
+    const svg = borderTemplateSVG(curBorderTemplate, curBorderColor);
+    const uri = svg ? `url("data:image/svg+xml,${encodeURIComponent(svg)}")` : 'none';
+    root.setProperty('--border-top-w', topOn ? '14px' : '0px');
+    root.setProperty('--border-bottom-w', botOn ? '14px' : '0px');
+    root.setProperty('--border-top-color', 'transparent');
+    root.setProperty('--border-bottom-color', 'transparent');
+    root.setProperty('--border-style', 'solid');
+    root.setProperty('--border-img-src', uri);
+  } else {
+    root.setProperty('--border-top-w', topOn ? '4px' : '0px');
+    root.setProperty('--border-bottom-w', botOn ? '4px' : '0px');
+    root.setProperty('--border-top-color', curBorderColor);
+    root.setProperty('--border-bottom-color', curBorderColor);
+    root.setProperty('--border-style', curBorderStyle);
+    root.setProperty('--border-img-src', 'none');
+  }
 }
 
 renderDayChips();
