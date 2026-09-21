@@ -183,16 +183,23 @@
     border-bottom:1px solid var(--line);
   }
   .headrow h1{ font-size:17px; margin:0; color:var(--ink); font-family:var(--ui-font); font-weight:600;}
-  .build-stamp-wrap{ position:relative; display:inline-block; margin-top:4px; }
-  .build-stamp-glow{
-    position:absolute; inset:-5px -9px;
-    border-radius:8px; filter:blur(7px); opacity:.6; z-index:0;
+  .build-stamp-wrap{ margin-top:5px; }
+  .build-stamp{
+    display:inline-block;
+    padding:4px 14px;
+    border-radius:999px;
+    font-family:'Jameel Noori Nastaleeq Kasheeda','Nafees Naskh',serif;
+    font-size:13px;
+    font-weight:700;
+    color:#fff;
+    direction:ltr;
+    letter-spacing:.3px;
     background:linear-gradient(90deg,#C9A227,#8FB996,#7FA8C9,#E0847A,#C9A227);
     background-size:300% 100%;
-    animation:glowShift 6s linear infinite;
-    pointer-events:none;
+    animation:glowShift 5s linear infinite;
+    box-shadow:0 0 10px rgba(201,162,39,.55), 0 0 2px rgba(0,0,0,.25);
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
   }
-  .build-stamp{ position:relative; z-index:1; font-size:10px; color:var(--sabzi); font-family:var(--ui-font); direction:ltr; text-align:right; }
   @keyframes glowShift{
     0%{ background-position:0% 50%; }
     100%{ background-position:300% 50%; }
@@ -415,7 +422,7 @@
   <div class="headrow">
     <div>
       <h1>توجہ فرمائیں</h1>
-      <div class="build-stamp-wrap"><div class="build-stamp-glow"></div><div class="build-stamp" id="buildStamp">پیر، 21 ستمبر — 10:29 AM اپڈیٹ</div></div>
+      <div class="build-stamp-wrap"><div class="build-stamp" id="buildStamp">پیر، 21 ستمبر — 11:31 AM اپڈیٹ</div></div>
     </div>
     <div>
       <button class="icon-btn" id="settingsToggle" title="سیٹنگز">⚙︎</button>
@@ -1471,6 +1478,22 @@ document.getElementById('noteText').addEventListener('input', ()=>{
   previewDraftOnBoard();
 });
 
+// رفتار/سائز/فونٹ بدلتے ہی فوری اثر — چاہے پٹی اس وقت "ایک ایک پیغام باری باری" موڈ میں چل رہی ہو
+// (پہلے صرف اگلے پیغام پر جا کر اثر ہوتا تھا، جو 120 سیکنڈ تک "سپیڈ اٹکی ہوئی" لگتی تھی — اب فوری بدلتی ہے)
+function refreshPlaybackNow(){
+  currentTickerText = '';
+  const modalOpen = document.getElementById('addModal').classList.contains('open');
+  if(modalOpen){
+    previewDraftOnBoard();
+    return;
+  }
+  if(cycleRunning){
+    playCycleMessage(); // موجودہ پیغام کو نئی رفتار/سائز کے ساتھ فوری دوبارہ چلائیں
+  } else {
+    updateTicker();
+  }
+}
+
 /* ===== لمبا دبانے پر پاپ اوور — ایڈٹ / ڈیلیٹ / نیا شامل کریں ===== */
 const board = document.getElementById('board');
 const tickerTrack = document.getElementById('tickerTrack');
@@ -1628,15 +1651,13 @@ buildChipPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v
 buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{
   curFont = v;
   document.documentElement.style.setProperty('--content-font', `'${v}', serif`);
-  currentTickerText = '';
-  updateTicker();
+  refreshPlaybackNow();
 });
 buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{
   curSize = v;
   document.documentElement.style.setProperty('--ticker-size', v + 'px');
   updateTickerHeight();
-  currentTickerText = '';
-  updateTicker();
+  refreshPlaybackNow();
 });
 buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{
   setTextAlign(v);
@@ -1647,32 +1668,32 @@ document.getElementById('noteCustomStyle').addEventListener('change', function()
   previewDraftOnBoard();
 });
 document.getElementById('noteBgShadeMinus').onclick = ()=>{
-  draftNoteStyle.bgShade = Math.max(SHADE_MIN, (draftNoteStyle.bgShade||0) - 5);
+  draftNoteStyle.bgShade = Math.max(SHADE_MIN, (draftNoteStyle.bgShade||0) - 10);
   document.getElementById('noteBgShadeValue').textContent = draftNoteStyle.bgShade;
   previewDraftOnBoard();
 };
 document.getElementById('noteBgShadePlus').onclick = ()=>{
-  draftNoteStyle.bgShade = Math.min(SHADE_MAX, (draftNoteStyle.bgShade||0) + 5);
+  draftNoteStyle.bgShade = Math.min(SHADE_MAX, (draftNoteStyle.bgShade||0) + 10);
   document.getElementById('noteBgShadeValue').textContent = draftNoteStyle.bgShade;
   previewDraftOnBoard();
 };
 document.getElementById('noteFgShadeMinus').onclick = ()=>{
-  draftNoteStyle.fgShade = Math.max(SHADE_MIN, (draftNoteStyle.fgShade||0) - 5);
+  draftNoteStyle.fgShade = Math.max(SHADE_MIN, (draftNoteStyle.fgShade||0) - 10);
   document.getElementById('noteFgShadeValue').textContent = draftNoteStyle.fgShade;
   previewDraftOnBoard();
 };
 document.getElementById('noteFgShadePlus').onclick = ()=>{
-  draftNoteStyle.fgShade = Math.min(SHADE_MAX, (draftNoteStyle.fgShade||0) + 5);
+  draftNoteStyle.fgShade = Math.min(SHADE_MAX, (draftNoteStyle.fgShade||0) + 10);
   document.getElementById('noteFgShadeValue').textContent = draftNoteStyle.fgShade;
   previewDraftOnBoard();
 };
 document.getElementById('noteBorderShadeMinus').onclick = ()=>{
-  draftNoteStyle.borderShade = Math.max(SHADE_MIN, (draftNoteStyle.borderShade||0) - 5);
+  draftNoteStyle.borderShade = Math.max(SHADE_MIN, (draftNoteStyle.borderShade||0) - 10);
   document.getElementById('noteBorderShadeValue').textContent = draftNoteStyle.borderShade;
   previewDraftOnBoard();
 };
 document.getElementById('noteBorderShadePlus').onclick = ()=>{
-  draftNoteStyle.borderShade = Math.min(SHADE_MAX, (draftNoteStyle.borderShade||0) + 5);
+  draftNoteStyle.borderShade = Math.min(SHADE_MAX, (draftNoteStyle.borderShade||0) + 10);
   document.getElementById('noteBorderShadeValue').textContent = draftNoteStyle.borderShade;
   previewDraftOnBoard();
 };
@@ -1680,12 +1701,12 @@ document.getElementById('noteBorderShadePlus').onclick = ()=>{
 document.getElementById('speedMinus').onclick = ()=>{
   tickerSpeed = Math.max(SPEED_MIN, tickerSpeed - 1); // نمبر کم = تیز
   updateSpeedDisplay();
-  currentTickerText=''; updateTicker(); persistSettings();
+  refreshPlaybackNow(); persistSettings();
 };
 document.getElementById('speedPlus').onclick = ()=>{
   tickerSpeed = Math.min(SPEED_MAX, tickerSpeed + 1); // نمبر زیادہ = آہستہ
   updateSpeedDisplay();
-  currentTickerText=''; updateTicker(); persistSettings();
+  refreshPlaybackNow(); persistSettings();
 };
 document.getElementById('thickMinus').onclick = ()=>{
   barExtraH = Math.max(THICK_MIN, barExtraH - 3);
@@ -1710,37 +1731,37 @@ document.getElementById('opacityPlus').onclick = ()=>{
   persistSettings();
 };
 document.getElementById('shadeMinus').onclick = ()=>{
-  curBgShade = Math.max(SHADE_MIN, curBgShade - 5);
+  curBgShade = Math.max(SHADE_MIN, curBgShade - 10);
   updateShadeDisplay();
   updateDots();
   persistSettings();
 };
 document.getElementById('shadePlus').onclick = ()=>{
-  curBgShade = Math.min(SHADE_MAX, curBgShade + 5);
+  curBgShade = Math.min(SHADE_MAX, curBgShade + 10);
   updateShadeDisplay();
   updateDots();
   persistSettings();
 };
 document.getElementById('fgShadeMinus').onclick = ()=>{
-  curFgShade = Math.max(SHADE_MIN, curFgShade - 5);
+  curFgShade = Math.max(SHADE_MIN, curFgShade - 10);
   updateFgShadeDisplay();
   updateDots();
   persistSettings();
 };
 document.getElementById('fgShadePlus').onclick = ()=>{
-  curFgShade = Math.min(SHADE_MAX, curFgShade + 5);
+  curFgShade = Math.min(SHADE_MAX, curFgShade + 10);
   updateFgShadeDisplay();
   updateDots();
   persistSettings();
 };
 document.getElementById('borderShadeMinus').onclick = ()=>{
-  curBorderShade = Math.max(SHADE_MIN, curBorderShade - 5);
+  curBorderShade = Math.max(SHADE_MIN, curBorderShade - 10);
   updateBorderShadeDisplay();
   updateDots();
   persistSettings();
 };
 document.getElementById('borderShadePlus').onclick = ()=>{
-  curBorderShade = Math.min(SHADE_MAX, curBorderShade + 5);
+  curBorderShade = Math.min(SHADE_MAX, curBorderShade + 10);
   updateBorderShadeDisplay();
   updateDots();
   persistSettings();
@@ -1792,8 +1813,8 @@ function applySettingsObj(s){
   buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{ curBorderColor=v; applyBorders(); });
   buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{ curBorderStyle=v; applyBorders(); });
   buildChipPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{ curBorderTemplate=v; applyBorders(); });
-  buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{ curFont=v; document.documentElement.style.setProperty('--content-font', `'${v}', serif`); currentTickerText=''; updateTicker(); });
-  buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{ curSize=v; document.documentElement.style.setProperty('--ticker-size', v+'px'); updateTickerHeight(); currentTickerText=''; updateTicker(); });
+  buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{ curFont=v; document.documentElement.style.setProperty('--content-font', `'${v}', serif`); refreshPlaybackNow(); });
+  buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{ curSize=v; document.documentElement.style.setProperty('--ticker-size', v+'px'); updateTickerHeight(); refreshPlaybackNow(); });
   buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{ setTextAlign(v); });
 
   applyBoardColor();
