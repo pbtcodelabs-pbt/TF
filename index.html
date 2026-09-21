@@ -183,36 +183,123 @@
     border-bottom:1px solid var(--line);
   }
   .headrow h1{ font-size:17px; margin:0; color:var(--ink); font-family:var(--ui-font); font-weight:600;}
-  .build-stamp{ font-size:10px; color:var(--sabzi); font-family:var(--ui-font); margin-top:2px; direction:ltr; text-align:right; }
+  .build-stamp-wrap{ position:relative; display:inline-block; margin-top:4px; }
+  .build-stamp-glow{
+    position:absolute; inset:-5px -9px;
+    border-radius:8px; filter:blur(7px); opacity:.6; z-index:0;
+    background:linear-gradient(90deg,#C9A227,#8FB996,#7FA8C9,#E0847A,#C9A227);
+    background-size:300% 100%;
+    animation:glowShift 6s linear infinite;
+    pointer-events:none;
+  }
+  .build-stamp{ position:relative; z-index:1; font-size:10px; color:var(--sabzi); font-family:var(--ui-font); direction:ltr; text-align:right; }
+  @keyframes glowShift{
+    0%{ background-position:0% 50%; }
+    100%{ background-position:300% 50%; }
+  }
   .icon-btn{
     background:none;border:none;font-size:19px;cursor:pointer;color:var(--ink);
     padding:6px;
   }
 
-  /* ===== Settings panel ===== */
-  .settings{
-    display:none;
-    padding:14px 16px;
+  /* ===== Clipboard-style message list (top of page) ===== */
+  .clipboard-section{
+    margin:10px 16px 4px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.07);
+    overflow:hidden;
+  }
+  .clip-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 12px;
     background:#F3ECDA;
     border-bottom:1px solid var(--line);
-    font-size:13px;
   }
-  .settings.open{ display:block; }
-  .settings h3{ margin:0 0 8px; font-size:13px; color:var(--ink); font-family:var(--ui-font);}
-  .row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
-  .srow{
+  .clip-head span{ font-size:12px; color:#8b8578; font-family:var(--ui-font); font-weight:700;}
+  .add-fab{
+    width:30px; height:30px; border-radius:50%; flex-shrink:0;
+    background:var(--brass); color:#2b2320; border:none;
+    font-size:19px; font-weight:700; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0;
+    box-shadow:0 2px 6px rgba(0,0,0,.25);
+  }
+  .add-fab:active{ transform:scale(.93); }
+  .clip-list{ max-height:38vh; overflow-y:auto; }
+  .clip-item{
+    display:flex; align-items:center; gap:8px;
+    padding:6px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .clip-item:last-child{ border-bottom:none; }
+  .clip-item.live{ background:#F3FBF3; border-right:3px solid var(--sabzi); }
+  .clip-item.done{ opacity:.5; }
+  .clip-check{
+    width:20px;height:20px;border-radius:50%; flex-shrink:0;
+    border:2px solid var(--sabzi);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    font-size:11px; color:var(--sabzi); background:#fff;
+  }
+  .clip-item.done .clip-check{ background:var(--sabzi); color:#fff; }
+  .clip-text{
+    flex:1; min-width:0; cursor:pointer;
+    font-family:var(--content-font);
+    font-size:15px; color:var(--ink); line-height:1.35;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .clip-item.done .clip-text{ text-decoration:line-through; }
+  .clip-ico{
+    border:none; background:none; cursor:pointer; font-size:14px; color:#a89f8a; padding:4px; flex-shrink:0;
+  }
+  .clip-ico.del:hover{ color:var(--danger); }
+  .clip-confirm{ display:flex; align-items:center; gap:8px; width:100%; }
+  .clip-confirm span{ font-size:12px; color:var(--danger); font-family:var(--ui-font); flex:1; }
+  .clip-confirm button{
+    border:none; border-radius:8px; padding:5px 10px; font-size:12px; font-family:var(--ui-font); cursor:pointer; font-weight:700;
+  }
+  .clip-confirm .yes{ background:var(--danger); color:#fff; }
+  .clip-confirm .no{ background:#eee; color:var(--ink); }
+  .clip-empty{ text-align:center; color:#a89f8a; font-size:12px; padding:16px 0; font-family:var(--ui-font); }
+
+  /* ===== Settings drawer (right side) ===== */
+  .drawer-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:850; display:none; }
+  .drawer-overlay.open{ display:block; }
+  .settings-drawer{
+    position:fixed; top:0; right:0; height:100%; width:84%; max-width:360px;
+    background:#F3ECDA; z-index:900; transform:translateX(100%);
+    transition:transform .22s ease; overflow-y:auto;
+    box-shadow:-6px 0 24px rgba(0,0,0,.3);
+    padding-bottom:24px;
+  }
+  .settings-drawer.open{ transform:translateX(0); }
+  .drawer-head{
     display:flex; align-items:center; justify-content:space-between;
-    gap:10px; padding:8px 0; border-bottom:1px solid var(--line);
+    padding:14px 16px; border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:#F3ECDA; z-index:2;
   }
-  .srow:last-child{ border-bottom:none; }
-  .srow .slabel{
-    font-size:13px; color:var(--ink); font-family:var(--ui-font); font-weight:700;
-    flex-shrink:0;
+  .drawer-head span{ font-size:15px; font-weight:700; font-family:var(--ui-font); color:var(--ink); }
+  .drawer-body{ padding:6px 16px 16px; }
+  .drawer-note{ font-size:11px; color:#8b8578; font-family:var(--ui-font); padding:8px 2px 12px; border-bottom:1px solid var(--line); margin-bottom:4px; }
+  .dd{ border-bottom:1px solid var(--line); }
+  .dd-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 2px; cursor:pointer;
   }
-  .srow .scontrol{
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end;
-  }
-  .srow select{ min-width:0; }
+  .dd-label{ font-size:13px; font-family:var(--ui-font); font-weight:700; color:var(--ink); }
+  .dd-current{ display:flex; align-items:center; gap:6px; }
+  .dd-dot{ width:16px;height:16px;border-radius:5px; border:1px solid rgba(0,0,0,.15); flex-shrink:0;}
+  .dd-caret{ font-size:10px; color:#8b8578; transition:transform .2s; }
+  .dd.open .dd-caret{ transform:rotate(180deg); }
+  .dd-body{ display:none; padding:2px 2px 14px; }
+  .dd.open .dd-body{ display:block; }
+  .shade-row{ display:flex; align-items:center; gap:8px; margin-top:10px; }
+  .mini-label{ font-size:11px; color:#8b8578; font-family:var(--ui-font); flex:1; }
+  .stepbtn.sm{ width:26px; height:26px; font-size:14px; border-radius:7px; }
+  .subgroup-label{ font-size:11px; color:#8b8578; font-family:var(--ui-font); font-weight:700; margin:10px 0 4px; }
+  .sync-tiny{ font-size:11px; color:#8b8578; font-family:var(--ui-font); padding:10px 2px 0; }
+
   .stepbtn{
     border:none; background:var(--brass); color:#2b2320;
     width:32px; height:32px; border-radius:9px; font-size:17px; font-weight:700; cursor:pointer;
@@ -226,16 +313,13 @@
     border-radius:9px; padding:7px 12px; font-family:var(--ui-font); font-size:12px; cursor:pointer; font-weight:600;
   }
   .posbtn:active{ background:var(--brass); color:#2b2320; }
-  .theme-pick{ display:flex; gap:10px; flex-wrap:wrap; }
-  .theme-item{ display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; }
   .swatch{
     width:32px;height:32px;border-radius:9px;cursor:pointer;border:2px solid transparent;
     box-shadow:0 1px 4px rgba(0,0,0,.2);
   }
   .swatch.active{ border-color:var(--brass); box-shadow:0 0 0 2px var(--brass), 0 1px 4px rgba(0,0,0,.2); }
-  .theme-item span{ font-size:10px; color:#8b8578; font-family:var(--ui-font); }
-  .srow-col{ flex-direction:column; align-items:flex-start; gap:6px; padding:6px 0; }
-  .srow-col .scontrol{ width:100%; justify-content:flex-start; }
+  .srow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .srow .slabel{ font-size:12px; color:var(--ink); font-family:var(--ui-font); font-weight:600; }
   .swatch-pick{ display:flex; gap:7px; flex-wrap:wrap; }
   .swatch-pick .swatch{ width:26px; height:26px; flex:0 0 26px; border-radius:7px; }
   .chip-pick{ display:flex; gap:6px; flex-wrap:wrap; }
@@ -244,22 +328,27 @@
     font-family:var(--ui-font); font-size:11px; cursor:pointer; color:var(--ink);
   }
   .chip-pick .chip.active{ background:var(--brass); border-color:var(--brass); color:#2b2320; font-weight:700; }
-  select, input[type=text], input[type=time]{
-    font-family:var(--ui-font);
-    padding:6px 8px;
-    border:1px solid var(--line);
-    border-radius:8px;
-    background:#fff;
-    font-size:13px;
-  }
 
-  /* ===== Add form ===== */
-  .addform{
-    padding:14px 16px;
-    border-bottom:1px solid var(--line);
-    display:flex; flex-direction:column; gap:9px;
+  /* ===== Add / edit modal ===== */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:930; display:none; }
+  .modal-overlay.open{ display:block; }
+  .add-modal{
+    display:none;
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:92%; max-width:440px; max-height:86vh; overflow-y:auto;
+    background:#fff; border-radius:16px; z-index:950;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
   }
-  .addform.highlight{ background:#FBF3D9; }
+  .add-modal.open{ display:block; }
+  .modal-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; border-bottom:1px solid var(--line);
+    position:sticky; top:0; background:#fff; z-index:2;
+  }
+  .modal-head span{ font-size:15px; font-weight:700; font-family:var(--ui-font); color:var(--ink); }
+  .modal-head button{ border:none; background:none; font-size:18px; cursor:pointer; color:var(--ink); padding:4px; }
+  .modal-body{ padding:12px 16px 16px; display:flex; flex-direction:column; gap:9px; }
+
   .addform textarea{
     font-family:var(--content-font);
     font-size:18px;
@@ -270,6 +359,7 @@
     min-height:44px;
     background:#fff;
     color:var(--ink);
+    width:100%;
   }
   .addform-label{ font-size:12px; color:#8b8578; font-family:var(--ui-font); }
   .days-row{ display:flex; gap:6px; flex-wrap:wrap; }
@@ -289,48 +379,17 @@
   }
   .btn-primary{ background:var(--brass); color:#2b2320; }
   .btn-ghost{ background:transparent; color:var(--ink); border:1px solid var(--line); }
-
-  /* ===== List ===== */
-  .list{ padding:10px 16px; flex:1; }
-  .list h2{ font-size:13px; color:#8b8578; margin:10px 0 6px; font-family:var(--ui-font); font-weight:600;}
-  .item{
-    display:flex; align-items:flex-start; gap:10px;
-    background:#fff;
+  select, input[type=text], input[type=time]{
+    font-family:var(--ui-font);
+    padding:6px 8px;
     border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:10px 12px;
-    margin-bottom:8px;
+    border-radius:8px;
+    background:#fff;
+    font-size:13px;
   }
-  .item.done{ opacity:.55; }
-  .item.live{ border-color:var(--sabzi); }
-  .item .check{
-    width:22px;height:22px;border-radius:50%;
-    border:2px solid var(--sabzi);
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer; flex-shrink:0; margin-top:2px;
-    font-size:13px; color:var(--sabzi); background:#fff;
-  }
-  .item.done .check{ background:var(--sabzi); color:#fff; }
-  .item-body{ flex:1; min-width:0; }
-  .item-text{
-    font-family:var(--content-font);
-    font-size:19px; color:var(--ink); line-height:1.5;
-  }
-  .item.done .item-text{ text-decoration:line-through; }
-  .item-meta{
-    font-size:11px; color:#9b9484; margin-top:3px; font-family:var(--ui-font);
-  }
-  .item-meta.live-tag{ color:var(--sabzi); font-weight:700; }
-  .item-actions{ display:flex; gap:6px; flex-shrink:0; }
-  .item-actions button{
-    border:none; background:none; cursor:pointer; font-size:15px; color:#a89f8a; padding:2px;
-  }
-  .item-actions button.del:hover{ color:var(--danger); }
-  .empty-note{
-    text-align:center; color:#a89f8a; font-size:13px; padding:20px 0; font-family:var(--ui-font);
-  }
+
   .sync-note{
-    font-size:11px; text-align:center; color:#a89f8a; padding:6px 16px 18px; font-family:var(--ui-font);
+    font-size:11px; text-align:center; color:#a89f8a; padding:10px 16px 18px; font-family:var(--ui-font);
   }
 </style>
 </head>
@@ -356,7 +415,7 @@
   <div class="headrow">
     <div>
       <h1>توجہ فرمائیں</h1>
-      <div class="build-stamp" id="buildStamp">پیر، 21 ستمبر — 09:38 AM اپڈیٹ</div>
+      <div class="build-stamp-wrap"><div class="build-stamp-glow"></div><div class="build-stamp" id="buildStamp">پیر، 21 ستمبر — 10:29 AM اپڈیٹ</div></div>
     </div>
     <div>
       <button class="icon-btn" id="settingsToggle" title="سیٹنگز">⚙︎</button>
@@ -364,110 +423,173 @@
     </div>
   </div>
 
-  <div class="settings" id="settingsPanel">
-    <div class="srow" style="border-bottom:none; padding-bottom:0;">
-      <span class="slabel" style="font-size:11px; color:#8b8578; font-weight:400;">جس پیغام کو علیحدہ رنگ/بارڈر دیا ہو، پٹی پر اسی کی باری پر وہی رنگ خودکار لگے گا — باقی پیغام نیچے دیے ڈیفالٹ رنگ کے ساتھ چلیں گے۔</span>
+  <div class="clipboard-section">
+    <div class="clip-head">
+      <span>پیغامات کی فہرست</span>
+      <button class="add-fab" id="addFabBtn" title="نیا پیغام">+</button>
     </div>
-    <div class="srow srow-col">
-      <span class="slabel">پٹی کا بیک گراؤنڈ رنگ (ڈیفالٹ)</span>
-      <div class="scontrol swatch-pick" id="bgRow"></div>
-    </div>
-    <div class="srow srow-col">
-      <span class="slabel">لکھائی کا رنگ (ڈیفالٹ)</span>
-      <div class="scontrol swatch-pick" id="fgRow"></div>
-    </div>
-    <div class="srow srow-col">
-      <span class="slabel">فونٹ</span>
-      <div class="scontrol chip-pick" id="fontRow"></div>
-    </div>
-    <div class="srow">
-      <span class="slabel">رفتار (− تیز / + آہستہ)</span>
-      <div class="scontrol">
-        <button type="button" class="stepbtn" id="speedMinus">−</button>
-        <span class="stepval" id="speedValue">14 سیکنڈ</span>
-        <button type="button" class="stepbtn" id="speedPlus">+</button>
-      </div>
-    </div>
-    <div class="srow">
-      <span class="slabel">لکھائی کا سائز</span>
-      <div class="scontrol chip-pick" id="sizeRow"></div>
-    </div>
-    <div class="srow">
-      <span class="slabel">رنگ کی گہرائی (− ہلکا / + گہرا)</span>
-      <div class="scontrol">
-        <button type="button" class="stepbtn" id="shadeMinus">−</button>
-        <span class="stepval" id="shadeValue">0</span>
-        <button type="button" class="stepbtn" id="shadePlus">+</button>
-      </div>
-    </div>
-    <div class="srow">
-      <span class="slabel">پیغامات کا درمیانی فاصلہ (ہندسوں میں)</span>
-      <div class="scontrol">
-        <button type="button" class="stepbtn" id="gapMinus">−</button>
-        <span class="stepval" id="gapValue">3</span>
-        <button type="button" class="stepbtn" id="gapPlus">+</button>
-      </div>
-    </div>
-    <div class="srow">
-      <span class="slabel">پٹی کی شفافیت (− شفاف / + گہری)</span>
-      <div class="scontrol">
-        <button type="button" class="stepbtn" id="opacityMinus">−</button>
-        <span class="stepval" id="opacityValue">100%</span>
-        <button type="button" class="stepbtn" id="opacityPlus">+</button>
-      </div>
-    </div>
-    <div class="srow srow-col">
-      <span class="slabel">لکھائی کی سیدھ (پٹی میں کہاں دکھے)</span>
-      <div class="scontrol chip-pick" id="textAlignRow"></div>
-    </div>
-    <div class="srow">
-      <span class="slabel">اوپر بارڈر</span>
-      <div class="scontrol"><input type="checkbox" id="borderTopOn"></div>
-    </div>
-    <div class="srow">
-      <span class="slabel">نیچے بارڈر</span>
-      <div class="scontrol"><input type="checkbox" id="borderBottomOn" checked></div>
-    </div>
-    <div class="srow srow-col">
-      <span class="slabel">بارڈر کا رنگ (ڈیفالٹ)</span>
-      <div class="scontrol swatch-pick" id="borderColorRow"></div>
-    </div>
-    <div class="srow srow-col">
-      <span class="slabel">بارڈر کا سادہ انداز</span>
-      <div class="scontrol chip-pick" id="borderStyleRow"></div>
-    </div>
-    <div class="srow srow-col">
-      <span class="slabel">خوبصورت بارڈر ٹیمپلیٹ</span>
-      <div class="scontrol chip-pick" id="borderTemplateRow"></div>
-    </div>
-    <div class="srow">
-      <span class="slabel">پٹی کی اونچائی (− پتلی / + موٹی)</span>
-      <div class="scontrol">
-        <button type="button" class="stepbtn" id="thickMinus">−</button>
-        <span class="stepval" id="thickValue">0</span>
-        <button type="button" class="stepbtn" id="thickPlus">+</button>
-      </div>
-    </div>
-    <div class="srow">
-      <span class="slabel">پٹی کی جگہ</span>
-      <div class="scontrol">
-        <button type="button" class="posbtn" id="posTopBtn">اوپر</button>
-        <button type="button" class="posbtn" id="posBottomBtn">نیچے</button>
-      </div>
-    </div>
-    <div class="srow">
-      <span class="slabel">انگلی سے ڈریگ کر کے جگہ بدلیں</span>
-      <div class="scontrol">
-        <input type="checkbox" id="dragEnable">
-      </div>
-    </div>
-    <div class="srow">
-      <span class="slabel" style="font-size:11px;color:#8b8578;">سنک حالت (ڈیبگ)</span>
-      <div class="scontrol"><span id="syncDebug" style="font-size:11px;color:#8b8578;">—</span></div>
-    </div>
+    <div class="clip-list" id="clipList"></div>
   </div>
 
-  <div class="addform" id="addForm">
+  <div class="sync-note" id="syncNote">یہ پیغامات آپ اور بیگم — دونوں موبائلز پر خودکار شریک ہوتے ہیں</div>
+</div>
+
+<!-- ===== Settings drawer (right side, dropdown-based) ===== -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="settings-drawer" id="settingsDrawer">
+  <div class="drawer-head"><span>سیٹنگز</span><button class="icon-btn" id="drawerCloseBtn">✕</button></div>
+  <div class="drawer-body">
+    <div class="drawer-note">جس پیغام کو علیحدہ رنگ/بارڈر دیا ہو، پٹی پر اسی کی باری پر وہی رنگ خودکار لگے گا — باقی پیغام نیچے دیے ڈیفالٹ رنگ کے ساتھ چلیں گے۔</div>
+
+    <div class="dd" data-dd="bg">
+      <div class="dd-head"><span class="dd-label">بیک گراؤنڈ رنگ (ڈیفالٹ)</span><span class="dd-current"><span class="dd-dot" id="bgDot"></span><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="scontrol swatch-pick" id="bgRow"></div>
+        <div class="shade-row">
+          <span class="mini-label">ہلکا/گہرا</span>
+          <button type="button" class="stepbtn sm" id="shadeMinus">−</button>
+          <span class="stepval" id="shadeValue">0</span>
+          <button type="button" class="stepbtn sm" id="shadePlus">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dd" data-dd="fg">
+      <div class="dd-head"><span class="dd-label">لکھائی کا رنگ (ڈیفالٹ)</span><span class="dd-current"><span class="dd-dot" id="fgDot"></span><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="scontrol swatch-pick" id="fgRow"></div>
+        <div class="shade-row">
+          <span class="mini-label">ہلکا/گہرا</span>
+          <button type="button" class="stepbtn sm" id="fgShadeMinus">−</button>
+          <span class="stepval" id="fgShadeValue">0</span>
+          <button type="button" class="stepbtn sm" id="fgShadePlus">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dd" data-dd="font">
+      <div class="dd-head"><span class="dd-label">فونٹ</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body"><div class="scontrol chip-pick" id="fontRow"></div></div>
+    </div>
+
+    <div class="dd" data-dd="size">
+      <div class="dd-head"><span class="dd-label">لکھائی کا سائز</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body"><div class="scontrol chip-pick" id="sizeRow"></div></div>
+    </div>
+
+    <div class="dd" data-dd="speed">
+      <div class="dd-head"><span class="dd-label">رفتار</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="srow">
+          <span class="slabel">− تیز / + آہستہ</span>
+          <div class="scontrol">
+            <button type="button" class="stepbtn" id="speedMinus">−</button>
+            <span class="stepval" id="speedValue">14 سیکنڈ</span>
+            <button type="button" class="stepbtn" id="speedPlus">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dd" data-dd="gap">
+      <div class="dd-head"><span class="dd-label">درمیانی فاصلہ</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="srow">
+          <span class="slabel">ہندسوں میں</span>
+          <div class="scontrol">
+            <button type="button" class="stepbtn" id="gapMinus">−</button>
+            <span class="stepval" id="gapValue">3</span>
+            <button type="button" class="stepbtn" id="gapPlus">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dd" data-dd="opacity">
+      <div class="dd-head"><span class="dd-label">پٹی کی شفافیت</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="srow">
+          <span class="slabel">− شفاف / + گہری</span>
+          <div class="scontrol">
+            <button type="button" class="stepbtn" id="opacityMinus">−</button>
+            <span class="stepval" id="opacityValue">100%</span>
+            <button type="button" class="stepbtn" id="opacityPlus">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dd" data-dd="align">
+      <div class="dd-head"><span class="dd-label">لکھائی کی سیدھ</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body"><div class="scontrol chip-pick" id="textAlignRow"></div></div>
+    </div>
+
+    <div class="dd" data-dd="border">
+      <div class="dd-head"><span class="dd-label">بارڈر</span><span class="dd-current"><span class="dd-dot" id="borderColorDot"></span><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="srow" style="margin-bottom:6px;">
+          <span class="slabel">اوپر بارڈر</span>
+          <div class="scontrol"><input type="checkbox" id="borderTopOn"></div>
+        </div>
+        <div class="srow" style="margin-bottom:6px;">
+          <span class="slabel">نیچے بارڈر</span>
+          <div class="scontrol"><input type="checkbox" id="borderBottomOn" checked></div>
+        </div>
+        <div class="subgroup-label">بارڈر کا رنگ</div>
+        <div class="scontrol swatch-pick" id="borderColorRow"></div>
+        <div class="shade-row">
+          <span class="mini-label">ہلکا/گہرا</span>
+          <button type="button" class="stepbtn sm" id="borderShadeMinus">−</button>
+          <span class="stepval" id="borderShadeValue">0</span>
+          <button type="button" class="stepbtn sm" id="borderShadePlus">+</button>
+        </div>
+        <div class="subgroup-label">بارڈر کا سادہ انداز</div>
+        <div class="scontrol chip-pick" id="borderStyleRow"></div>
+        <div class="subgroup-label">خوبصورت بارڈر ٹیمپلیٹ</div>
+        <div class="scontrol chip-pick" id="borderTemplateRow"></div>
+      </div>
+    </div>
+
+    <div class="dd" data-dd="thick">
+      <div class="dd-head"><span class="dd-label">پٹی کی اونچائی</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="srow">
+          <span class="slabel">− پتلی / + موٹی</span>
+          <div class="scontrol">
+            <button type="button" class="stepbtn" id="thickMinus">−</button>
+            <span class="stepval" id="thickValue">0</span>
+            <button type="button" class="stepbtn" id="thickPlus">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dd" data-dd="position">
+      <div class="dd-head"><span class="dd-label">پٹی کی جگہ</span><span class="dd-current"><span class="dd-caret">▾</span></span></div>
+      <div class="dd-body">
+        <div class="srow" style="margin-bottom:8px;">
+          <span class="slabel"></span>
+          <div class="scontrol">
+            <button type="button" class="posbtn" id="posTopBtn">اوپر</button>
+            <button type="button" class="posbtn" id="posBottomBtn">نیچے</button>
+          </div>
+        </div>
+        <div class="srow">
+          <span class="slabel">انگلی سے ڈریگ کر کے جگہ بدلیں</span>
+          <div class="scontrol"><input type="checkbox" id="dragEnable"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sync-tiny">سنک حالت (ڈیبگ): <span id="syncDebug">—</span></div>
+  </div>
+</div>
+
+<!-- ===== Add / edit message modal ===== -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="add-modal addform" id="addModal">
+  <div class="modal-head"><span id="modalTitle">نیا پیغام شامل کریں</span><button id="modalCloseBtn">✕</button></div>
+  <div class="modal-body">
     <textarea id="noteText" placeholder="مثال: آتے ہوئے دودھ لیتے آئیے گا"></textarea>
 
     <div class="addform-label">کن دنوں چلے؟ (کچھ نہ چنیں = ہر روز)</div>
@@ -503,6 +625,14 @@
         <span class="slabel">لکھائی کا رنگ</span>
         <div class="scontrol swatch-pick" id="noteFgRow"></div>
       </div>
+      <div class="srow">
+        <span class="slabel">لکھائی گہرا/ہلکا</span>
+        <div class="scontrol">
+          <button type="button" class="stepbtn" id="noteFgShadeMinus">−</button>
+          <span class="stepval" id="noteFgShadeValue">0</span>
+          <button type="button" class="stepbtn" id="noteFgShadePlus">+</button>
+        </div>
+      </div>
       <div class="srow srow-col">
         <span class="slabel">بارڈر کا رنگ</span>
         <div class="scontrol swatch-pick" id="noteBorderRow"></div>
@@ -520,22 +650,15 @@
         <div class="scontrol chip-pick" id="noteFontRow"></div>
       </div>
       <div class="srow" style="border-bottom:none;">
-        <span class="slabel" style="font-size:11px;color:#8b8578;">اوپر پیغام لکھنے کے خانے میں یہ انداز فوری طور پر نظر آئے گا</span>
+        <span class="slabel" style="font-size:11px;color:#8b8578;">اوپر اصل پٹی پر یہ انداز فوری طور پر نظر آئے گا</span>
       </div>
     </div>
 
     <div class="addform-row">
       <button class="btn btn-primary" id="addBtn">شامل کریں</button>
-      <button class="btn btn-ghost" id="cancelEditBtn" style="display:none;">منسوخ</button>
+      <button class="btn btn-ghost" id="cancelEditBtn">منسوخ</button>
     </div>
   </div>
-
-  <div class="list">
-    <div id="activeSection"></div>
-    <div id="historySection"></div>
-  </div>
-
-  <div class="sync-note" id="syncNote">یہ پیغامات آپ اور بیگم — دونوں موبائلز پر خودکار شریک ہوتے ہیں</div>
 </div>
 
 <script>
@@ -694,6 +817,7 @@ function setSyncStatus(state){
   }
 }
 // ہر پیلٹ میں صرف ایک ٹھوس رنگ — کوئی گریڈینٹ/ڈبل رنگ نہیں
+// (ہلکے اور گہرے دونوں طرح کے رنگ موجود ہیں — + / − سے مزید ہلکا/گہرا کیا جا سکتا ہے)
 const BG_COLORS = [
   {name:'برص', v:'#1F2E2B'}, {name:'سبزی', v:'#1E3323'}, {name:'مہندی', v:'#2B2118'},
   {name:'نیلگوں', v:'#1A2733'}, {name:'روشن', v:'#F3ECDA'}, {name:'سرخی', v:'#3A1418'},
@@ -701,6 +825,8 @@ const BG_COLORS = [
   {name:'قہوہ', v:'#4A2E1E'}, {name:'سلیٹی', v:'#33393E'}, {name:'گلابی', v:'#4A222E'},
   {name:'فیروزی', v:'#1B3B3A'}, {name:'شاہی نیلا', v:'#1E2A5E'}, {name:'گہرا سرخ', v:'#5C1A1A'},
   {name:'کالا سنہری', v:'#12130F'},
+  {name:'ہلکا سبز', v:'#DCEBD8'}, {name:'ہلکا سنہری', v:'#F5E7B8'}, {name:'ہلکا نیلا', v:'#D9E8F5'},
+  {name:'ہلکا گلابی', v:'#F6DEDA'}, {name:'ہلکی چائے', v:'#F0E2C9'}, {name:'ہلکا فیروزی', v:'#D7EFE9'},
 ];
 const FG_COLORS = [
   {name:'کریمی', v:'#F3E9C9'}, {name:'سفید', v:'#FFFFFF'}, {name:'سنہری', v:'#C9A227'},
@@ -708,12 +834,14 @@ const FG_COLORS = [
   {name:'گلابی', v:'#E0847A'}, {name:'گہرا', v:'#2B2320'}, {name:'قہوہ', v:'#8B5E1F'},
   {name:'سرخی', v:'#A24A3F'}, {name:'فیروزی', v:'#6FC2B4'}, {name:'ارغوانی', v:'#B48AD1'},
   {name:'زرد', v:'#E8D25A'},
+  {name:'ہلکا سبز', v:'#C3E6C3'}, {name:'ہلکا سنہری', v:'#F0DE9A'}, {name:'ہلکا آسمانی', v:'#C7E0F0'},
 ];
 const BORDER_COLORS = [
   {name:'سنہری', v:'#C9A227'}, {name:'تانبا', v:'#D98E4A'}, {name:'گلابی سونا', v:'#E0847A'},
   {name:'چاندی', v:'#7FA8C9'}, {name:'سبز', v:'#8FB996'}, {name:'سفید', v:'#FFFFFF'},
   {name:'کانسی', v:'#8B5E1F'}, {name:'زنگی', v:'#A24A3F'}, {name:'جامنی', v:'#3B2A4A'},
   {name:'گہرا', v:'#2B2320'}, {name:'فیروزی', v:'#6FC2B4'}, {name:'شاہی سنہری', v:'#E8C24A'},
+  {name:'ہلکا سبز', v:'#CFEACB'}, {name:'ہلکا سنہری', v:'#F3E5AC'}, {name:'ہلکا گلابی', v:'#F6D8D2'},
 ];
 const BORDER_STYLES = [
   {name:'سادہ', v:'solid'}, {name:'ڈیشڈ', v:'dashed'}, {name:'نقطے', v:'dotted'},
@@ -800,8 +928,10 @@ let curBorderColor = '#C9A227';
 let curBorderStyle = 'solid';
 let curBorderTemplate = 'none';
 let curTextAlign = 'middle';
-let draftNoteStyle = {bg:null, fg:null, borderColor:null, font:null, bgShade:0, borderShade:0};
-let curBgShade = 0; // -50 (ہلکا) .. +50 (گہرا)
+let draftNoteStyle = {bg:null, fg:null, borderColor:null, font:null, bgShade:0, fgShade:0, borderShade:0};
+let curBgShade = 0; // -50 (ہلکا) .. +50 (گہرا) — بیک گراؤنڈ کے لیے
+let curFgShade = 0; // لکھائی کے رنگ کے لیے
+let curBorderShade = 0; // بارڈر کے رنگ کے لیے
 const SHADE_MIN = -50, SHADE_MAX = 50;
 let boardOpacity = 100; // فیصد — 0 = بالکل شفاف، 100 = مکمل گہری
 function hexToRgba(hex, pct){
@@ -853,9 +983,11 @@ function shadeColor(hex, delta){
   const nl = Math.min(95, Math.max(5, l + delta));
   return hslToHex(h,s,nl);
 }
+function effectiveBg(){ return shadeColor(curBg, curBgShade); }
+function effectiveFg(){ return shadeColor(curFg, curFgShade); }
+function effectiveBorderColor(){ return shadeColor(curBorderColor, curBorderShade); }
 function applyBoardColor(){
-  const effective = shadeColor(curBg, curBgShade);
-  document.documentElement.style.setProperty('--board', hexToRgba(effective, boardOpacity));
+  document.documentElement.style.setProperty('--board', hexToRgba(effectiveBg(), boardOpacity));
 }
 function updateOpacityDisplay(){
   const el = document.getElementById('opacityValue');
@@ -867,9 +999,24 @@ function updateShadeDisplay(){
   if(el) el.textContent = curBgShade;
   applyBoardColor();
 }
+function updateFgShadeDisplay(){
+  const el = document.getElementById('fgShadeValue');
+  if(el) el.textContent = curFgShade;
+  document.documentElement.style.setProperty('--board-ink', effectiveFg());
+}
+function updateBorderShadeDisplay(){
+  const el = document.getElementById('borderShadeValue');
+  if(el) el.textContent = curBorderShade;
+  applyBorders();
+}
 function updateGapDisplay(){
   const el = document.getElementById('gapValue');
   if(el) el.textContent = curGap;
+}
+function updateDots(){
+  const bgDot = document.getElementById('bgDot'); if(bgDot) bgDot.style.background = effectiveBg();
+  const fgDot = document.getElementById('fgDot'); if(fgDot) fgDot.style.background = effectiveFg();
+  const bcDot = document.getElementById('borderColorDot'); if(bcDot) bcDot.style.background = effectiveBorderColor();
 }
 function setTextAlign(v){
   curTextAlign = v;
@@ -893,6 +1040,7 @@ function buildSwatchPicker(containerId, list, getCurrent, onPick){
       row.querySelectorAll('.swatch').forEach(c=>c.classList.remove('active'));
       sw.classList.add('active');
       onPick(item.v);
+      updateDots();
       if(!applyingFromCloud) persistSettings();
     };
     row.appendChild(sw);
@@ -985,24 +1133,28 @@ function refreshNoteStylePickers(){
   buildNoteColorPicker('noteBorderRow', BORDER_COLORS, ()=>draftNoteStyle.borderColor, v=>{ draftNoteStyle.borderColor=v; previewDraftOnBoard(); });
   buildNoteChipPicker('noteFontRow', FONTS, ()=>draftNoteStyle.font, v=>{ draftNoteStyle.font=v; previewDraftOnBoard(); });
   const bgShadeEl = document.getElementById('noteBgShadeValue'); if(bgShadeEl) bgShadeEl.textContent = draftNoteStyle.bgShade || 0;
+  const fgShadeEl = document.getElementById('noteFgShadeValue'); if(fgShadeEl) fgShadeEl.textContent = draftNoteStyle.fgShade || 0;
   const bcShadeEl = document.getElementById('noteBorderShadeValue'); if(bcShadeEl) bcShadeEl.textContent = draftNoteStyle.borderShade || 0;
 }
 // اس میسج کا مقرر کردہ انداز پٹی پر لگائیں (جو فیلڈ سیٹ نہیں وہ ڈیفالٹ سیٹنگ سے آئے گی)
+// ہر رنگ (بیک گراؤنڈ، لکھائی، بارڈر) کا اپنا شیڈ استعمال ہوتا ہے — یا نہ ہو تو 0
 function applyNoteStyle(note){
   const st = (note && note.style) || {};
   const bg = st.bg || curBg;
   const fg = st.fg || curFg;
   const bc = st.borderColor || curBorderColor;
   const fnt = st.font || curFont;
-  const effBg = shadeColor(bg, curBgShade);
+  const effBg = shadeColor(bg, st.bgShade || 0);
+  const effFg = shadeColor(fg, st.fgShade || 0);
+  const effBc = shadeColor(bc, st.borderShade || 0);
   const root = document.documentElement.style;
   root.setProperty('--board', hexToRgba(effBg, boardOpacity));
-  root.setProperty('--board-ink', fg);
+  root.setProperty('--board-ink', effFg);
   root.setProperty('--content-font', `'${fnt}', serif`);
   const topOn = document.getElementById('borderTopOn').checked;
   const botOn = document.getElementById('borderBottomOn').checked;
   if(curBorderTemplate && curBorderTemplate !== 'none'){
-    const svg = borderTemplateSVG(curBorderTemplate, bc);
+    const svg = borderTemplateSVG(curBorderTemplate, effBc);
     const uri = svg ? `url("data:image/svg+xml,${encodeURIComponent(svg)}")` : 'none';
     root.setProperty('--border-top-w', topOn ? '14px' : '0px');
     root.setProperty('--border-bottom-w', botOn ? '14px' : '0px');
@@ -1013,8 +1165,8 @@ function applyNoteStyle(note){
   } else {
     root.setProperty('--border-top-w', topOn ? '4px' : '0px');
     root.setProperty('--border-bottom-w', botOn ? '4px' : '0px');
-    root.setProperty('--border-top-color', bc);
-    root.setProperty('--border-bottom-color', bc);
+    root.setProperty('--border-top-color', effBc);
+    root.setProperty('--border-bottom-color', effBc);
     root.setProperty('--border-style', curBorderStyle);
     root.setProperty('--border-img-src', 'none');
   }
@@ -1022,7 +1174,7 @@ function applyNoteStyle(note){
 // ڈیفالٹ (گلوبل) انداز واپس لگائیں
 function restoreDefaultStyle(){
   applyBoardColor();
-  document.documentElement.style.setProperty('--board-ink', curFg);
+  document.documentElement.style.setProperty('--board-ink', effectiveFg());
   document.documentElement.style.setProperty('--content-font', `'${curFont}', serif`);
   applyBorders();
 }
@@ -1064,6 +1216,8 @@ function currentSettings(){
     gap: curGap,
     opacity: boardOpacity,
     bgShade: curBgShade,
+    fgShade: curFgShade,
+    borderShade: curBorderShade,
     textAlign: curTextAlign,
     borderTopOn: document.getElementById('borderTopOn').checked,
     borderBottomOn: document.getElementById('borderBottomOn').checked,
@@ -1099,47 +1253,37 @@ function timeLabel(n){
   return (n.startTime||'00:00') + ' تا ' + n.endTime;
 }
 
+/* ===== کلپ بورڈ کی طرح باریک فہرست — ہوم پیج پر سب سے اوپر ===== */
 function render(){
-  const active = notes.filter(n=>!n.done);
-  const done = notes.filter(n=>n.done);
-
-  const activeSection = document.getElementById('activeSection');
-  const historySection = document.getElementById('historySection');
-
-  activeSection.innerHTML = '<h2>سب پیغامات</h2>';
-  if(active.length===0){
-    activeSection.innerHTML += '<div class="empty-note">ابھی کوئی پیغام شامل نہیں کیا گیا</div>';
+  const list = document.getElementById('clipList');
+  list.innerHTML = '';
+  if(!notes.length){
+    list.innerHTML = '<div class="clip-empty">ابھی کوئی پیغام شامل نہیں کیا گیا</div>';
   } else {
-    active.forEach(n=>{ activeSection.appendChild(buildItem(n)); });
+    notes.forEach(n=>{ list.appendChild(buildClipItem(n)); });
   }
-
-  historySection.innerHTML = '';
-  if(done.length){
-    historySection.innerHTML = '<h2>غیر فعال</h2>';
-    done.forEach(n=>{ historySection.appendChild(buildItem(n)); });
-  }
-
   updateTicker();
 }
 
-function buildItem(n){
+function buildClipItem(n){
   const live = isActiveNow(n);
   const div = document.createElement('div');
-  div.className = 'item' + (n.done ? ' done' : '') + (live ? ' live' : '');
+  div.className = 'clip-item' + (n.done ? ' done' : '') + (live ? ' live' : '');
   div.innerHTML = `
-    <div class="check">${n.done?'':'✓'}</div>
-    <div class="item-body">
-      <div class="item-text">${escapeHtml(n.text)}</div>
-      <div class="item-meta ${live?'live-tag':''}">${live?'اب چل رہا ہے · ':''}${daysLabel(n)} · ${timeLabel(n)}</div>
-    </div>
-    <div class="item-actions">
-      <button class="edit" title="ایڈٹ">✎</button>
-      <button class="del" title="ڈیلیٹ">✕</button>
-    </div>
+    <div class="clip-check" title="مکمل/غیر فعال">${n.done?'':'✓'}</div>
+    <div class="clip-text" title="${daysLabel(n)} · ${timeLabel(n)}">${escapeHtml(n.text)}</div>
+    <button class="clip-ico edit" title="ایڈٹ">✎</button>
+    <button class="clip-ico del" title="ڈیلیٹ">✕</button>
   `;
-  div.querySelector('.check').onclick = ()=>toggleDone(n.id);
+  div.querySelector('.clip-check').onclick = ()=>toggleDone(n.id);
+  div.querySelector('.clip-text').onclick = ()=>editNote(n.id);
   div.querySelector('.edit').onclick = ()=>editNote(n.id);
-  div.querySelector('.del').onclick = ()=>deleteNote(n.id);
+  div.querySelector('.del').onclick = ()=>{
+    div.innerHTML = `<div class="clip-confirm"><span>واقعی حذف کریں؟</span>
+      <button class="yes">ہاں</button><button class="no">نہیں</button></div>`;
+    div.querySelector('.yes').onclick = ()=>deleteNote(n.id);
+    div.querySelector('.no').onclick = ()=>render();
+  };
   return div;
 }
 
@@ -1156,6 +1300,16 @@ function deleteNote(id){
   saveNotes(); render(); renderPop();
 }
 
+/* ===== شامل کریں / ایڈٹ موڈل ===== */
+function openAddModal(){
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('addModal').classList.add('open');
+}
+function closeAddModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('addModal').classList.remove('open');
+}
+
 function editNote(id){
   const n = notes.find(x=>x.id===id);
   if(!n) return;
@@ -1166,18 +1320,16 @@ function editNote(id){
   document.getElementById('noteContinuous').checked = !!n.continuous;
   selectedDays = (n.days || []).slice();
   renderDayChips();
-  draftNoteStyle = Object.assign({bg:null, fg:null, borderColor:null, font:null, bgShade:0, borderShade:0}, n.style || {});
+  draftNoteStyle = Object.assign({bg:null, fg:null, borderColor:null, font:null, bgShade:0, fgShade:0, borderShade:0}, n.style || {});
   document.getElementById('noteCustomStyle').checked = !!n.style;
   document.getElementById('noteStylePanel').style.display = n.style ? 'block' : 'none';
   refreshNoteStylePickers();
   previewDraftOnBoard();
+  document.getElementById('modalTitle').textContent = 'پیغام میں ترمیم';
   document.getElementById('addBtn').textContent = 'محفوظ کریں (ایڈٹ)';
-  document.getElementById('cancelEditBtn').style.display = 'inline-block';
-  document.getElementById('addForm').classList.add('highlight');
   closePop();
-  document.body.classList.remove('compact');
+  openAddModal();
   document.getElementById('noteText').focus();
-  document.getElementById('addForm').scrollIntoView({behavior:'smooth', block:'center'});
 }
 
 function resetForm(){
@@ -1188,13 +1340,12 @@ function resetForm(){
   document.getElementById('noteContinuous').checked = false;
   selectedDays = [];
   renderDayChips();
-  draftNoteStyle = {bg:null, fg:null, borderColor:null, font:null, bgShade:0, borderShade:0};
+  draftNoteStyle = {bg:null, fg:null, borderColor:null, font:null, bgShade:0, fgShade:0, borderShade:0};
   document.getElementById('noteCustomStyle').checked = false;
   document.getElementById('noteStylePanel').style.display = 'none';
   refreshNoteStylePickers();
+  document.getElementById('modalTitle').textContent = 'نیا پیغام شامل کریں';
   document.getElementById('addBtn').textContent = 'شامل کریں';
-  document.getElementById('cancelEditBtn').style.display = 'none';
-  document.getElementById('addForm').classList.remove('highlight');
   currentTickerText = '';
   updateTicker(); // پیش منظر ہٹا کر اصل پٹی واپس دکھائیں
 }
@@ -1217,7 +1368,7 @@ function addOrSaveNote(){
   resetForm();
   saveNotes();
   render();
-  document.body.classList.add('compact');
+  closeAddModal();
 }
 
 /* ===== دنوں کے چپس ===== */
@@ -1401,9 +1552,13 @@ board.addEventListener('pointermove', (e)=>{
 document.getElementById('popAddBtn').onclick = ()=>{
   closePop();
   resetForm();
-  document.body.classList.remove('compact');
+  openAddModal();
   document.getElementById('noteText').focus();
-  document.getElementById('addForm').scrollIntoView({behavior:'smooth', block:'center'});
+};
+document.getElementById('addFabBtn').onclick = ()=>{
+  resetForm();
+  openAddModal();
+  document.getElementById('noteText').focus();
 };
 document.addEventListener('click', (e)=>{
   if(tickerPop.classList.contains('open') && !tickerPop.contains(e.target) && !board.contains(e.target)){
@@ -1411,19 +1566,44 @@ document.addEventListener('click', (e)=>{
   }
 });
 
-/* ===== settings panel ===== */
+/* ===== سیٹنگز drawer (دائیں طرف) ===== */
 document.getElementById('settingsToggle').onclick = ()=>{
-  document.getElementById('settingsPanel').classList.toggle('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.getElementById('settingsDrawer').classList.add('open');
 };
+function closeDrawer(){
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.getElementById('settingsDrawer').classList.remove('open');
+}
+document.getElementById('drawerCloseBtn').onclick = closeDrawer;
+document.getElementById('drawerOverlay').onclick = closeDrawer;
+
 document.getElementById('closeAppBtn').onclick = ()=>{
   document.body.classList.add('compact');
+  closeDrawer();
+  closeAddModal();
 };
-document.getElementById('cancelEditBtn').addEventListener('click', ()=>{
-  document.body.classList.add('compact');
-});
+function closeAndResetModal(){ resetForm(); closeAddModal(); }
+document.getElementById('cancelEditBtn').onclick = closeAndResetModal;
+document.getElementById('modalCloseBtn').onclick = closeAndResetModal;
+document.getElementById('modalOverlay').onclick = closeAndResetModal;
+
 ['borderTopOn','borderBottomOn'].forEach(id=>{
   document.getElementById(id).addEventListener('change', ()=>{ applyBorders(); persistSettings(); });
 });
+
+/* ===== ڈراپ ڈاؤن (accordion) — ایک وقت میں صرف ایک کھلا رہے ===== */
+function setupAccordion(){
+  document.querySelectorAll('.dd').forEach(dd=>{
+    const head = dd.querySelector('.dd-head');
+    head.onclick = ()=>{
+      const isOpen = dd.classList.contains('open');
+      document.querySelectorAll('.dd.open').forEach(o=>{ if(o!==dd) o.classList.remove('open'); });
+      dd.classList.toggle('open', !isOpen);
+    };
+  });
+}
+setupAccordion();
 
 buildSwatchPicker('bgRow', BG_COLORS, ()=>curBg, (v)=>{
   curBg = v;
@@ -1431,7 +1611,7 @@ buildSwatchPicker('bgRow', BG_COLORS, ()=>curBg, (v)=>{
 });
 buildSwatchPicker('fgRow', FG_COLORS, ()=>curFg, (v)=>{
   curFg = v;
-  document.documentElement.style.setProperty('--board-ink', v);
+  document.documentElement.style.setProperty('--board-ink', effectiveFg());
 });
 buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{
   curBorderColor = v;
@@ -1474,6 +1654,16 @@ document.getElementById('noteBgShadeMinus').onclick = ()=>{
 document.getElementById('noteBgShadePlus').onclick = ()=>{
   draftNoteStyle.bgShade = Math.min(SHADE_MAX, (draftNoteStyle.bgShade||0) + 5);
   document.getElementById('noteBgShadeValue').textContent = draftNoteStyle.bgShade;
+  previewDraftOnBoard();
+};
+document.getElementById('noteFgShadeMinus').onclick = ()=>{
+  draftNoteStyle.fgShade = Math.max(SHADE_MIN, (draftNoteStyle.fgShade||0) - 5);
+  document.getElementById('noteFgShadeValue').textContent = draftNoteStyle.fgShade;
+  previewDraftOnBoard();
+};
+document.getElementById('noteFgShadePlus').onclick = ()=>{
+  draftNoteStyle.fgShade = Math.min(SHADE_MAX, (draftNoteStyle.fgShade||0) + 5);
+  document.getElementById('noteFgShadeValue').textContent = draftNoteStyle.fgShade;
   previewDraftOnBoard();
 };
 document.getElementById('noteBorderShadeMinus').onclick = ()=>{
@@ -1522,11 +1712,37 @@ document.getElementById('opacityPlus').onclick = ()=>{
 document.getElementById('shadeMinus').onclick = ()=>{
   curBgShade = Math.max(SHADE_MIN, curBgShade - 5);
   updateShadeDisplay();
+  updateDots();
   persistSettings();
 };
 document.getElementById('shadePlus').onclick = ()=>{
   curBgShade = Math.min(SHADE_MAX, curBgShade + 5);
   updateShadeDisplay();
+  updateDots();
+  persistSettings();
+};
+document.getElementById('fgShadeMinus').onclick = ()=>{
+  curFgShade = Math.max(SHADE_MIN, curFgShade - 5);
+  updateFgShadeDisplay();
+  updateDots();
+  persistSettings();
+};
+document.getElementById('fgShadePlus').onclick = ()=>{
+  curFgShade = Math.min(SHADE_MAX, curFgShade + 5);
+  updateFgShadeDisplay();
+  updateDots();
+  persistSettings();
+};
+document.getElementById('borderShadeMinus').onclick = ()=>{
+  curBorderShade = Math.max(SHADE_MIN, curBorderShade - 5);
+  updateBorderShadeDisplay();
+  updateDots();
+  persistSettings();
+};
+document.getElementById('borderShadePlus').onclick = ()=>{
+  curBorderShade = Math.min(SHADE_MAX, curBorderShade + 5);
+  updateBorderShadeDisplay();
+  updateDots();
   persistSettings();
 };
 document.getElementById('gapMinus').onclick = ()=>{
@@ -1541,7 +1757,6 @@ document.getElementById('gapPlus').onclick = ()=>{
 };
 
 document.getElementById('addBtn').onclick = addOrSaveNote;
-document.getElementById('cancelEditBtn').onclick = resetForm;
 
 function persistSettings(){
   const s = currentSettings();
@@ -1554,7 +1769,7 @@ function applySettings(){
 function applySettingsObj(s){
   applyingFromCloud = true;
   if(s.bg){ curBg = s.bg; }
-  if(s.fg){ curFg = s.fg; document.documentElement.style.setProperty('--board-ink', s.fg); }
+  if(s.fg){ curFg = s.fg; }
   if(s.font){ curFont = s.font; document.documentElement.style.setProperty('--content-font', `'${s.font}', serif`); }
   if(s.speed){ tickerSpeed = parseInt(s.speed) || 14; }
   if(s.size){ curSize = s.size; document.documentElement.style.setProperty('--ticker-size', s.size + 'px'); }
@@ -1564,13 +1779,16 @@ function applySettingsObj(s){
   if(s.borderTemplate){ curBorderTemplate = s.borderTemplate; }
   if(s.opacity !== undefined){ boardOpacity = parseInt(s.opacity) || 100; }
   if(s.bgShade !== undefined){ curBgShade = parseInt(s.bgShade) || 0; }
+  if(s.fgShade !== undefined){ curFgShade = parseInt(s.fgShade) || 0; }
+  if(s.borderShade !== undefined){ curBorderShade = parseInt(s.borderShade) || 0; }
+  document.documentElement.style.setProperty('--board-ink', effectiveFg());
   setTextAlign(s.textAlign || 'middle');
   document.getElementById('borderTopOn').checked = !!s.borderTopOn;
   document.getElementById('borderBottomOn').checked = (s.borderBottomOn !== undefined) ? !!s.borderBottomOn : true;
 
   // اب سکرین پر تمام سویچ/چپ لسٹیں دوبارہ بنائیں تاکہ صحیح فعال آئٹم نظر آئے
   buildSwatchPicker('bgRow', BG_COLORS, ()=>curBg, (v)=>{ curBg=v; applyBoardColor(); });
-  buildSwatchPicker('fgRow', FG_COLORS, ()=>curFg, (v)=>{ curFg=v; document.documentElement.style.setProperty('--board-ink', v); });
+  buildSwatchPicker('fgRow', FG_COLORS, ()=>curFg, (v)=>{ curFg=v; document.documentElement.style.setProperty('--board-ink', effectiveFg()); });
   buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{ curBorderColor=v; applyBorders(); });
   buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{ curBorderStyle=v; applyBorders(); });
   buildChipPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{ curBorderTemplate=v; applyBorders(); });
@@ -1583,7 +1801,10 @@ function applySettingsObj(s){
   updateSpeedDisplay();
   updateOpacityDisplay();
   updateShadeDisplay();
+  updateFgShadeDisplay();
+  updateBorderShadeDisplay();
   updateGapDisplay();
+  updateDots();
   cycleIndex = 0; cycleRunning = false;
   currentTickerText = '';
   updateTicker();
@@ -1596,8 +1817,9 @@ function applyBorders(){
   const topOn = document.getElementById('borderTopOn').checked;
   const botOn = document.getElementById('borderBottomOn').checked;
   const root = document.documentElement.style;
+  const bc = effectiveBorderColor();
   if(curBorderTemplate && curBorderTemplate !== 'none'){
-    const svg = borderTemplateSVG(curBorderTemplate, curBorderColor);
+    const svg = borderTemplateSVG(curBorderTemplate, bc);
     const uri = svg ? `url("data:image/svg+xml,${encodeURIComponent(svg)}")` : 'none';
     root.setProperty('--border-top-w', topOn ? '14px' : '0px');
     root.setProperty('--border-bottom-w', botOn ? '14px' : '0px');
@@ -1608,11 +1830,12 @@ function applyBorders(){
   } else {
     root.setProperty('--border-top-w', topOn ? '4px' : '0px');
     root.setProperty('--border-bottom-w', botOn ? '4px' : '0px');
-    root.setProperty('--border-top-color', curBorderColor);
-    root.setProperty('--border-bottom-color', curBorderColor);
+    root.setProperty('--border-top-color', bc);
+    root.setProperty('--border-bottom-color', bc);
     root.setProperty('--border-style', curBorderStyle);
     root.setProperty('--border-img-src', 'none');
   }
+  updateDots();
 }
 
 renderDayChips();
