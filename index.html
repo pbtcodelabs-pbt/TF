@@ -356,7 +356,7 @@
   <div class="headrow">
     <div>
       <h1>توجہ فرمائیں</h1>
-      <div class="build-stamp" id="buildStamp">پیر، 21 ستمبر — 09:20 AM اپڈیٹ</div>
+      <div class="build-stamp" id="buildStamp">پیر، 21 ستمبر — 09:38 AM اپڈیٹ</div>
     </div>
     <div>
       <button class="icon-btn" id="settingsToggle" title="سیٹنگز">⚙︎</button>
@@ -365,9 +365,8 @@
   </div>
 
   <div class="settings" id="settingsPanel">
-    <div class="srow srow-col">
-      <span class="slabel">پٹی کا انداز</span>
-      <div class="scontrol chip-pick" id="styleModeRow"></div>
+    <div class="srow" style="border-bottom:none; padding-bottom:0;">
+      <span class="slabel" style="font-size:11px; color:#8b8578; font-weight:400;">جس پیغام کو علیحدہ رنگ/بارڈر دیا ہو، پٹی پر اسی کی باری پر وہی رنگ خودکار لگے گا — باقی پیغام نیچے دیے ڈیفالٹ رنگ کے ساتھ چلیں گے۔</span>
     </div>
     <div class="srow srow-col">
       <span class="slabel">پٹی کا بیک گراؤنڈ رنگ (ڈیفالٹ)</span>
@@ -763,7 +762,6 @@ const SIZES = [
   {name:'بڑا', v:'30'}, {name:'بہت بڑا', v:'36'},
 ];
 const TEXT_ALIGNS = [ {name:'اوپر', v:'top'}, {name:'درمیان', v:'middle'}, {name:'نیچے', v:'bottom'} ];
-const STYLE_MODES = [ {name:'ڈیفالٹ (ایک ہی انداز)', v:'default'}, {name:'ہر میسج کا علیحدہ انداز', v:'perMessage'} ];
 const DAYS = [
   {v:0,l:'اتوار'}, {v:1,l:'پیر'}, {v:2,l:'منگل'}, {v:3,l:'بدھ'},
   {v:4,l:'جمعرات'}, {v:5,l:'جمعہ'}, {v:6,l:'ہفتہ'}
@@ -802,7 +800,6 @@ let curBorderColor = '#C9A227';
 let curBorderStyle = 'solid';
 let curBorderTemplate = 'none';
 let curTextAlign = 'middle';
-let curStyleMode = 'default'; // default = سب کے لیے ایک انداز | perMessage = ہر میسج کا اپنا انداز
 let draftNoteStyle = {bg:null, fg:null, borderColor:null, font:null, bgShade:0, borderShade:0};
 let curBgShade = 0; // -50 (ہلکا) .. +50 (گہرا)
 const SHADE_MIN = -50, SHADE_MAX = 50;
@@ -981,35 +978,14 @@ function buildNoteChipPicker(containerId, list, getCurrent, onPick){
     row.appendChild(chip);
   });
 }
+// نوٹ: نیچے میسج لکھنے کا خانہ ہمیشہ سادہ رہتا ہے — پیش منظر صرف اوپر اصل پٹی پر دکھایا جاتا ہے (previewDraftOnBoard)
 function refreshNoteStylePickers(){
-  buildNoteColorPicker('noteBgRow', BG_COLORS, ()=>draftNoteStyle.bg, v=>{ draftNoteStyle.bg=v; updateNotePreview(); previewDraftOnBoard(); });
-  buildNoteColorPicker('noteFgRow', FG_COLORS, ()=>draftNoteStyle.fg, v=>{ draftNoteStyle.fg=v; updateNotePreview(); previewDraftOnBoard(); });
-  buildNoteColorPicker('noteBorderRow', BORDER_COLORS, ()=>draftNoteStyle.borderColor, v=>{ draftNoteStyle.borderColor=v; updateNotePreview(); previewDraftOnBoard(); });
-  buildNoteChipPicker('noteFontRow', FONTS, ()=>draftNoteStyle.font, v=>{ draftNoteStyle.font=v; updateNotePreview(); previewDraftOnBoard(); });
+  buildNoteColorPicker('noteBgRow', BG_COLORS, ()=>draftNoteStyle.bg, v=>{ draftNoteStyle.bg=v; previewDraftOnBoard(); });
+  buildNoteColorPicker('noteFgRow', FG_COLORS, ()=>draftNoteStyle.fg, v=>{ draftNoteStyle.fg=v; previewDraftOnBoard(); });
+  buildNoteColorPicker('noteBorderRow', BORDER_COLORS, ()=>draftNoteStyle.borderColor, v=>{ draftNoteStyle.borderColor=v; previewDraftOnBoard(); });
+  buildNoteChipPicker('noteFontRow', FONTS, ()=>draftNoteStyle.font, v=>{ draftNoteStyle.font=v; previewDraftOnBoard(); });
   const bgShadeEl = document.getElementById('noteBgShadeValue'); if(bgShadeEl) bgShadeEl.textContent = draftNoteStyle.bgShade || 0;
   const bcShadeEl = document.getElementById('noteBorderShadeValue'); if(bcShadeEl) bcShadeEl.textContent = draftNoteStyle.borderShade || 0;
-  updateNotePreview();
-}
-// اوپر پیغام لکھنے کے خانے (textarea) میں فوری طور پر منتخب انداز دکھائیں
-function updateNotePreview(){
-  const ta = document.getElementById('noteText');
-  if(!ta) return;
-  const on = document.getElementById('noteCustomStyle').checked;
-  if(!on){
-    ta.style.background = '';
-    ta.style.color = '';
-    ta.style.fontFamily = '';
-    ta.style.border = '';
-    return;
-  }
-  const bg = draftNoteStyle.bg ? shadeColor(draftNoteStyle.bg, draftNoteStyle.bgShade||0) : null;
-  const fg = draftNoteStyle.fg || null;
-  const bc = draftNoteStyle.borderColor ? shadeColor(draftNoteStyle.borderColor, draftNoteStyle.borderShade||0) : null;
-  const fnt = draftNoteStyle.font || null;
-  ta.style.background = bg || '';
-  ta.style.color = fg || '';
-  ta.style.fontFamily = fnt ? `'${fnt}', serif` : '';
-  ta.style.border = bc ? `3px solid ${bc}` : '1px solid var(--line)';
 }
 // اس میسج کا مقرر کردہ انداز پٹی پر لگائیں (جو فیلڈ سیٹ نہیں وہ ڈیفالٹ سیٹنگ سے آئے گی)
 function applyNoteStyle(note){
@@ -1089,7 +1065,6 @@ function currentSettings(){
     opacity: boardOpacity,
     bgShade: curBgShade,
     textAlign: curTextAlign,
-    styleMode: curStyleMode,
     borderTopOn: document.getElementById('borderTopOn').checked,
     borderBottomOn: document.getElementById('borderBottomOn').checked,
     borderColor: curBorderColor,
@@ -1263,9 +1238,10 @@ function renderDayChips(){
 }
 
 /* ===== ٹکر — ہر وقت وہی پیغامات دکھائے جو ابھی "چل رہے" ہیں =====
-   ڈیفالٹ موڈ: سب پیغامات ایک ساتھ ایک ہی انداز میں مسلسل چلتے ہیں۔
-   پرمیسج موڈ: ایک ایک پیغام باری باری اپنے اپنے (یا ڈیفالٹ) انداز کے ساتھ مکمل گزرتا ہے،
-   پورا گزرنے کے بعد اگلے پیغام کا انداز خودکار لگ جاتا ہے۔ ===== */
+   خودکار: اگر ابھی چلنے والے پیغامات میں سے کسی ایک کا بھی علیحدہ انداز (رنگ/بارڈر/فونٹ) مقرر ہے
+   تو پٹی خود بخود "ایک ایک پیغام باری باری" موڈ پر چلی جاتی ہے — ہر پیغام اپنے (یا ڈیفالٹ) انداز
+   کے ساتھ مکمل گزرتا ہے، پورا گزرنے کے بعد اگلے پیغام کا انداز خودکار لگ جاتا ہے۔
+   ورنہ (کسی نے علیحدہ انداز نہیں چنا) پرانے انداز میں سب پیغام ایک ساتھ، ایک ہی رنگ میں چلتے ہیں۔ ===== */
 let currentTickerText = '';
 let cycleIndex = 0;
 let cycleRunning = false;
@@ -1296,13 +1272,14 @@ function playCycleMessage(){
 function updateTicker(){
   const track = document.getElementById('tickerTrack');
   if(track.classList.contains('paused')) return; // پاپ اوور کھلا ہو تو مت چھیڑیں
-  if(curStyleMode === 'perMessage'){
+  const live = notes.filter(isActiveNow);
+  const anyCustomStyled = live.some(n=>n.style);
+  if(anyCustomStyled){
     if(!cycleRunning) playCycleMessage(); // جاری میسج کو بیچ میں مت کاٹیں، خود بخود اگلے پر چلا جائے گا
     return;
   }
   cycleRunning = false;
   restoreDefaultStyle();
-  const live = notes.filter(isActiveNow);
   const spaces = ' '.repeat(Math.max(0, curGap)); // non-breaking space — تاکہ فاصلہ واقعی نظر آئے
   const sep = spaces + '•' + spaces;
   const combined = live.map(n=>n.text).join(sep);
@@ -1484,37 +1461,30 @@ buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{
 buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{
   setTextAlign(v);
 });
-buildChipPicker('styleModeRow', STYLE_MODES, ()=>curStyleMode, (v)=>{
-  curStyleMode = v;
-  cycleIndex = 0; cycleRunning = false;
-  currentTickerText = '';
-  updateTicker();
-});
 refreshNoteStylePickers();
 document.getElementById('noteCustomStyle').addEventListener('change', function(){
   document.getElementById('noteStylePanel').style.display = this.checked ? 'block' : 'none';
-  updateNotePreview();
   previewDraftOnBoard();
 });
 document.getElementById('noteBgShadeMinus').onclick = ()=>{
   draftNoteStyle.bgShade = Math.max(SHADE_MIN, (draftNoteStyle.bgShade||0) - 5);
   document.getElementById('noteBgShadeValue').textContent = draftNoteStyle.bgShade;
-  updateNotePreview(); previewDraftOnBoard();
+  previewDraftOnBoard();
 };
 document.getElementById('noteBgShadePlus').onclick = ()=>{
   draftNoteStyle.bgShade = Math.min(SHADE_MAX, (draftNoteStyle.bgShade||0) + 5);
   document.getElementById('noteBgShadeValue').textContent = draftNoteStyle.bgShade;
-  updateNotePreview(); previewDraftOnBoard();
+  previewDraftOnBoard();
 };
 document.getElementById('noteBorderShadeMinus').onclick = ()=>{
   draftNoteStyle.borderShade = Math.max(SHADE_MIN, (draftNoteStyle.borderShade||0) - 5);
   document.getElementById('noteBorderShadeValue').textContent = draftNoteStyle.borderShade;
-  updateNotePreview(); previewDraftOnBoard();
+  previewDraftOnBoard();
 };
 document.getElementById('noteBorderShadePlus').onclick = ()=>{
   draftNoteStyle.borderShade = Math.min(SHADE_MAX, (draftNoteStyle.borderShade||0) + 5);
   document.getElementById('noteBorderShadeValue').textContent = draftNoteStyle.borderShade;
-  updateNotePreview(); previewDraftOnBoard();
+  previewDraftOnBoard();
 };
 
 document.getElementById('speedMinus').onclick = ()=>{
@@ -1595,7 +1565,6 @@ function applySettingsObj(s){
   if(s.opacity !== undefined){ boardOpacity = parseInt(s.opacity) || 100; }
   if(s.bgShade !== undefined){ curBgShade = parseInt(s.bgShade) || 0; }
   setTextAlign(s.textAlign || 'middle');
-  curStyleMode = s.styleMode || 'default';
   document.getElementById('borderTopOn').checked = !!s.borderTopOn;
   document.getElementById('borderBottomOn').checked = (s.borderBottomOn !== undefined) ? !!s.borderBottomOn : true;
 
@@ -1608,7 +1577,6 @@ function applySettingsObj(s){
   buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{ curFont=v; document.documentElement.style.setProperty('--content-font', `'${v}', serif`); currentTickerText=''; updateTicker(); });
   buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{ curSize=v; document.documentElement.style.setProperty('--ticker-size', v+'px'); updateTickerHeight(); currentTickerText=''; updateTicker(); });
   buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{ setTextAlign(v); });
-  buildChipPicker('styleModeRow', STYLE_MODES, ()=>curStyleMode, (v)=>{ curStyleMode=v; cycleIndex=0; cycleRunning=false; currentTickerText=''; updateTicker(); });
 
   applyBoardColor();
   applyBorders();
