@@ -124,14 +124,6 @@
   }
   /* ===== پٹی صرف موڈ — باقی پورا ایپ چھپا رہتا ہے، صرف پٹی نظر آتی ہے ===== */
   body.compact .app{ display:none; }
-  .board-gear{
-    position:absolute;
-    top:6px; left:8px;
-    background:none; border:none;
-    color:var(--board-ink); opacity:.5;
-    font-size:14px; cursor:pointer; padding:4px;
-    z-index:510;
-  }
   .ticker-placeholder{
     text-align:center;
     width:100%;
@@ -191,6 +183,7 @@
     border-bottom:1px solid var(--line);
   }
   .headrow h1{ font-size:17px; margin:0; color:var(--ink); font-family:var(--ui-font); font-weight:600;}
+  .build-stamp{ font-size:10px; color:var(--sabzi); font-family:var(--ui-font); margin-top:2px; direction:ltr; text-align:right; }
   .icon-btn{
     background:none;border:none;font-size:19px;cursor:pointer;color:var(--ink);
     padding:6px;
@@ -341,10 +334,9 @@
   }
 </style>
 </head>
-<body class="compact">
+<body>
 
 <div class="board" id="board">
-  <button class="board-gear" id="boardGear" title="پیغامات / سیٹنگز">⚙</button>
   <span id="syncDebugTop" style="position:absolute; top:7px; right:8px; font-size:9px; color:var(--board-ink); opacity:.55; z-index:511; font-family:var(--ui-font); direction:ltr;">—</span>
   <div class="ticker-track" id="tickerTrack">
     <div class="ticker-placeholder" id="tickerPlaceholder">فی الحال کوئی پیغام چلنے کے لیے مقرر نہیں</div>
@@ -362,7 +354,10 @@
   <div class="board-spacer"></div>
 
   <div class="headrow">
-    <h1>توجہ فرمائیں</h1>
+    <div>
+      <h1>توجہ فرمائیں</h1>
+      <div class="build-stamp" id="buildStamp">پیر، 21 ستمبر — 09:20 AM اپڈیٹ</div>
+    </div>
     <div>
       <button class="icon-btn" id="settingsToggle" title="سیٹنگز">⚙︎</button>
       <button class="icon-btn" id="closeAppBtn" title="صرف پٹی دکھائیں">✕</button>
@@ -1445,9 +1440,6 @@ document.getElementById('settingsToggle').onclick = ()=>{
 };
 document.getElementById('closeAppBtn').onclick = ()=>{
   document.body.classList.add('compact');
-};
-document.getElementById('boardGear').onclick = ()=>{
-  document.body.classList.remove('compact');
 };
 document.getElementById('cancelEditBtn').addEventListener('click', ()=>{
   document.body.classList.add('compact');

@@ -1,7 +1,7 @@
 // توجہ فرمائیں — Service Worker
 // آفلائن سپورٹ: ایپ ایک بار کھلنے کے بعد بغیر انٹرنیٹ کے بھی چلے گی۔
 
-const CACHE_NAME = 'tawajjo-farmayen-v26';
+const CACHE_NAME = 'tawajjo-farmayen-v27-21SEPMO0920AM';
 const APP_SHELL = [
   './',
   './index.html',
