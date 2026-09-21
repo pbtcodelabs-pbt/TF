@@ -81,8 +81,8 @@
     color:var(--board-ink);
     z-index:500;
     width:100%;
-    border-top:var(--border-top-w,0px) solid var(--border-top-color,#C9A227);
-    border-bottom:var(--border-bottom-w,4px) solid var(--border-bottom-color,#C9A227);
+    border-top:var(--border-top-w,0px) var(--border-style,solid) var(--border-top-color,#C9A227);
+    border-bottom:var(--border-bottom-w,4px) var(--border-style,solid) var(--border-bottom-color,#C9A227);
     padding-top:env(safe-area-inset-top);
     touch-action:none;
     -webkit-user-select:none; user-select:none;
@@ -235,6 +235,16 @@
   }
   .swatch.active{ border-color:var(--brass); box-shadow:0 0 0 2px var(--brass), 0 1px 4px rgba(0,0,0,.2); }
   .theme-item span{ font-size:10px; color:#8b8578; font-family:var(--ui-font); }
+  .srow-col{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .srow-col .scontrol{ width:100%; justify-content:flex-start; }
+  .swatch-pick{ display:flex; gap:9px; flex-wrap:wrap; }
+  .swatch-pick .swatch{ width:28px; height:28px; border-radius:8px; }
+  .chip-pick{ display:flex; gap:7px; flex-wrap:wrap; }
+  .chip-pick .chip{
+    padding:7px 12px; border-radius:20px; border:1px solid var(--line); background:#fff;
+    font-family:var(--ui-font); font-size:12px; cursor:pointer; color:var(--ink);
+  }
+  .chip-pick .chip.active{ background:var(--brass); border-color:var(--brass); color:#2b2320; font-weight:700; }
   select, input[type=text], input[type=time]{
     font-family:var(--ui-font);
     padding:6px 8px;
@@ -354,20 +364,17 @@
   </div>
 
   <div class="settings" id="settingsPanel">
-    <div class="srow">
-      <span class="slabel">رنگ سکیم</span>
-      <div class="scontrol theme-pick" id="colorRow"></div>
+    <div class="srow srow-col">
+      <span class="slabel">پٹی کا بیک گراؤنڈ رنگ</span>
+      <div class="scontrol swatch-pick" id="bgRow"></div>
     </div>
-    <div class="srow">
+    <div class="srow srow-col">
+      <span class="slabel">لکھائی کا رنگ</span>
+      <div class="scontrol swatch-pick" id="fgRow"></div>
+    </div>
+    <div class="srow srow-col">
       <span class="slabel">فونٹ</span>
-      <div class="scontrol">
-        <select id="fontSelect">
-          <option value="Jameel Noori Nastaleeq">نوری نستعلیق — ریگولر</option>
-          <option value="Jameel Noori Nastaleeq Kasheeda">نوری نستعلیق — کشیدہ</option>
-          <option value="AA Sameer Almas">اے اے سمیر الماس</option>
-          <option value="Nafees Naskh">نفیس نسخ</option>
-        </select>
-      </div>
+      <div class="scontrol chip-pick" id="fontRow"></div>
     </div>
     <div class="srow">
       <span class="slabel">رفتار (− تیز / + آہستہ)</span>
@@ -379,44 +386,35 @@
     </div>
     <div class="srow">
       <span class="slabel">لکھائی کا سائز</span>
-      <div class="scontrol">
-        <select id="sizeSelect">
-          <option value="18">چھوٹا</option>
-          <option value="24" selected>درمیانہ</option>
-          <option value="30">بڑا</option>
-        </select>
-      </div>
-    </div>
-    <div class="srow">
-      <span class="slabel">پٹی کا رنگ / لکھائی کا رنگ</span>
-      <div class="scontrol">
-        <input type="color" id="tickerBg" value="#1F2E2B">
-        <input type="color" id="tickerFg" value="#F3E9C9">
-      </div>
+      <div class="scontrol chip-pick" id="sizeRow"></div>
     </div>
     <div class="srow">
       <span class="slabel">پیغامات کا فاصلہ</span>
+      <div class="scontrol chip-pick" id="gapRow"></div>
+    </div>
+    <div class="srow">
+      <span class="slabel">پٹی کی شفافیت (− شفاف / + گہری)</span>
       <div class="scontrol">
-        <select id="gapSelect">
-          <option value="compact">کم</option>
-          <option value="normal" selected>درمیانہ</option>
-          <option value="wide">زیادہ</option>
-        </select>
+        <button type="button" class="stepbtn" id="opacityMinus">−</button>
+        <span class="stepval" id="opacityValue">100%</span>
+        <button type="button" class="stepbtn" id="opacityPlus">+</button>
       </div>
     </div>
     <div class="srow">
       <span class="slabel">اوپر بارڈر</span>
-      <div class="scontrol">
-        <input type="checkbox" id="borderTopOn">
-        <input type="color" id="borderTopColor" value="#C9A227">
-      </div>
+      <div class="scontrol"><input type="checkbox" id="borderTopOn"></div>
     </div>
     <div class="srow">
       <span class="slabel">نیچے بارڈر</span>
-      <div class="scontrol">
-        <input type="checkbox" id="borderBottomOn" checked>
-        <input type="color" id="borderBottomColor" value="#C9A227">
-      </div>
+      <div class="scontrol"><input type="checkbox" id="borderBottomOn" checked></div>
+    </div>
+    <div class="srow srow-col">
+      <span class="slabel">بارڈر کا رنگ</span>
+      <div class="scontrol swatch-pick" id="borderColorRow"></div>
+    </div>
+    <div class="srow srow-col">
+      <span class="slabel">بارڈر کا انداز</span>
+      <div class="scontrol chip-pick" id="borderStyleRow"></div>
     </div>
     <div class="srow">
       <span class="slabel">موٹائی (− پتلی / + موٹی)</span>
@@ -630,14 +628,37 @@ function setSyncStatus(state){
     el.textContent = 'یہ پیغامات آپ اور بیگم — دونوں موبائلز پر خودکار شریک ہوتے ہیں';
   }
 }
-const THEMES = [
-  {name:'برص', board:'#1F2E2B', brass:'#C9A227', paper:'#FBF6EC', ink:'#3B2A2E'},
-  {name:'سبزی', board:'#1E3323', brass:'#8FB996', paper:'#F6F7EE', ink:'#28331F'},
-  {name:'مہندی', board:'#2B2118', brass:'#D98E4A', paper:'#FBF3E7', ink:'#3A2A1A'},
-  {name:'نیلگوں', board:'#1A2733', brass:'#7FA8C9', paper:'#F1F5F8', ink:'#20303D'},
-  {name:'روشن', board:'#F3ECDA', brass:'#8B5E1F', paper:'#FFFFFF', ink:'#2B2320'},
-  {name:'سرخی', board:'#3A1418', brass:'#E0847A', paper:'#FBF1EE', ink:'#3A1418'},
+// ہر پیلٹ میں صرف ایک ٹھوس رنگ — کوئی گریڈینٹ/ڈبل رنگ نہیں
+const BG_COLORS = [
+  {name:'برص', v:'#1F2E2B'}, {name:'سبزی', v:'#1E3323'}, {name:'مہندی', v:'#2B2118'},
+  {name:'نیلگوں', v:'#1A2733'}, {name:'روشن', v:'#F3ECDA'}, {name:'سرخی', v:'#3A1418'},
+  {name:'آسمانی', v:'#2B4C6F'}, {name:'جامنی', v:'#3B2A4A'}, {name:'زیتونی', v:'#3A3A1E'},
+  {name:'قہوہ', v:'#4A2E1E'}, {name:'سلیٹی', v:'#33393E'}, {name:'گلابی', v:'#4A222E'},
 ];
+const FG_COLORS = [
+  {name:'کریمی', v:'#F3E9C9'}, {name:'سفید', v:'#FFFFFF'}, {name:'سنہری', v:'#C9A227'},
+  {name:'سبز', v:'#8FB996'}, {name:'نارنجی', v:'#D98E4A'}, {name:'آسمانی', v:'#7FA8C9'},
+  {name:'گلابی', v:'#E0847A'}, {name:'گہرا', v:'#2B2320'}, {name:'قہوہ', v:'#8B5E1F'},
+  {name:'سرخی', v:'#A24A3F'},
+];
+const BORDER_COLORS = [
+  {name:'سنہری', v:'#C9A227'}, {name:'تانبا', v:'#D98E4A'}, {name:'گلابی سونا', v:'#E0847A'},
+  {name:'چاندی', v:'#7FA8C9'}, {name:'سبز', v:'#8FB996'}, {name:'سفید', v:'#FFFFFF'},
+  {name:'کانسی', v:'#8B5E1F'}, {name:'زنگی', v:'#A24A3F'}, {name:'جامنی', v:'#3B2A4A'},
+  {name:'گہرا', v:'#2B2320'},
+];
+const BORDER_STYLES = [
+  {name:'سادہ', v:'solid'}, {name:'ڈیشڈ', v:'dashed'}, {name:'نقطے', v:'dotted'},
+  {name:'ڈبل لائن', v:'double'}, {name:'نقش (Groove)', v:'groove'}, {name:'رج (Ridge)', v:'ridge'},
+];
+const FONTS = [
+  {name:'نوری نستعلیق', v:'Jameel Noori Nastaleeq'},
+  {name:'نوری — کشیدہ', v:'Jameel Noori Nastaleeq Kasheeda'},
+  {name:'اے اے سمیر الماس', v:'AA Sameer Almas'},
+  {name:'نفیس نسخ', v:'Nafees Naskh'},
+];
+const SIZES = [ {name:'چھوٹا', v:'18'}, {name:'درمیانہ', v:'24'}, {name:'بڑا', v:'30'} ];
+const GAPS = [ {name:'کم', v:'compact'}, {name:'درمیانہ', v:'normal'}, {name:'زیادہ', v:'wide'} ];
 const DAYS = [
   {v:0,l:'اتوار'}, {v:1,l:'پیر'}, {v:2,l:'منگل'}, {v:3,l:'بدھ'},
   {v:4,l:'جمعرات'}, {v:5,l:'جمعہ'}, {v:6,l:'ہفتہ'}
@@ -660,11 +681,71 @@ function updateThickDisplay(){
   if(el) el.textContent = barExtraH;
   updateTickerHeight();
 }
+let curSize = '24';
 function updateTickerHeight(){
-  const sizeEl = document.getElementById('sizeSelect');
-  const fontPx = sizeEl ? parseInt(sizeEl.value) : 24;
+  const fontPx = parseInt(curSize) || 24;
   const h = Math.max(28, fontPx + 28 + barExtraH);
   document.documentElement.style.setProperty('--ticker-h', h + 'px');
+}
+// ===== موجودہ حالت — سب کچھ کلک/چپ سے چنا جاتا ہے، native picker کی ضرورت نہیں =====
+let curBg = '#1F2E2B';
+let curFg = '#F3E9C9';
+let curFont = 'Jameel Noori Nastaleeq';
+let curGap = 'normal';
+let curBorderColor = '#C9A227';
+let curBorderStyle = 'solid';
+let boardOpacity = 100; // فیصد — 0 = بالکل شفاف، 100 = مکمل گہری
+function hexToRgba(hex, pct){
+  hex = (hex||'#000000').replace('#','');
+  if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+  const r = parseInt(hex.substr(0,2),16)||0, g = parseInt(hex.substr(2,2),16)||0, b = parseInt(hex.substr(4,2),16)||0;
+  return `rgba(${r},${g},${b},${Math.max(0,Math.min(100,pct))/100})`;
+}
+function applyBoardColor(){
+  document.documentElement.style.setProperty('--board', hexToRgba(curBg, boardOpacity));
+}
+function updateOpacityDisplay(){
+  const el = document.getElementById('opacityValue');
+  if(el) el.textContent = boardOpacity + '%';
+  applyBoardColor();
+}
+// ===== ری یوز ایبل بلڈرز: رنگ پیلٹ اور چپ لسٹ =====
+function buildSwatchPicker(containerId, list, getCurrent, onPick){
+  const row = document.getElementById(containerId);
+  if(!row) return;
+  row.innerHTML = '';
+  list.forEach(item=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch';
+    sw.style.background = item.v;
+    sw.title = item.name;
+    if(item.v.toUpperCase() === (getCurrent()||'').toUpperCase()) sw.classList.add('active');
+    sw.onclick = ()=>{
+      row.querySelectorAll('.swatch').forEach(c=>c.classList.remove('active'));
+      sw.classList.add('active');
+      onPick(item.v);
+      if(!applyingFromCloud) persistSettings();
+    };
+    row.appendChild(sw);
+  });
+}
+function buildChipPicker(containerId, list, getCurrent, onPick){
+  const row = document.getElementById(containerId);
+  if(!row) return;
+  row.innerHTML = '';
+  list.forEach(item=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = item.name;
+    if(item.v === getCurrent()) chip.classList.add('active');
+    chip.onclick = ()=>{
+      row.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      onPick(item.v);
+      if(!applyingFromCloud) persistSettings();
+    };
+    row.appendChild(chip);
+  });
 }
 
 function uid(){ return 'n' + Date.now() + Math.random().toString(36).slice(2,7); }
@@ -696,17 +777,17 @@ function saveSettings(s){
 }
 function currentSettings(){
   return {
-    theme: document.querySelector('.swatch.active')?.dataset.i ?? '0',
-    font: document.getElementById('fontSelect').value,
+    font: curFont,
     speed: tickerSpeed,
-    size: document.getElementById('sizeSelect').value,
-    bg: document.getElementById('tickerBg').value,
-    fg: document.getElementById('tickerFg').value,
-    gap: document.getElementById('gapSelect').value,
+    size: curSize,
+    bg: curBg,
+    fg: curFg,
+    gap: curGap,
+    opacity: boardOpacity,
     borderTopOn: document.getElementById('borderTopOn').checked,
-    borderTopColor: document.getElementById('borderTopColor').value,
     borderBottomOn: document.getElementById('borderBottomOn').checked,
-    borderBottomColor: document.getElementById('borderBottomColor').value,
+    borderColor: curBorderColor,
+    borderStyle: curBorderStyle,
     posTop: boardTop,
     thickness: barExtraH,
   };
@@ -868,9 +949,8 @@ function updateTicker(){
   const track = document.getElementById('tickerTrack');
   if(track.classList.contains('paused')) return; // پاپ اوور کھلا ہو تو مت چھیڑیں
   const live = notes.filter(isActiveNow);
-  const gapSel = document.getElementById('gapSelect');
   const gapMap = { compact:'  •  ', normal:'   •   ', wide:'        •        ' };
-  const sep = gapMap[gapSel ? gapSel.value : 'normal'] || gapMap.normal;
+  const sep = gapMap[curGap] || gapMap.normal;
   const combined = live.map(n=>n.text).join(sep);
   if(!combined){
     track.classList.add('empty');
@@ -1003,53 +1083,45 @@ document.getElementById('boardGear').onclick = ()=>{
 document.getElementById('cancelEditBtn').addEventListener('click', ()=>{
   document.body.classList.add('compact');
 });
-document.getElementById('gapSelect').addEventListener('change', ()=>{
-  currentTickerText = '';
-  updateTicker();
-  persistSettings();
-});
-['borderTopOn','borderTopColor','borderBottomOn','borderBottomColor'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', ()=>{ applyBorders(); persistSettings(); });
+['borderTopOn','borderBottomOn'].forEach(id=>{
   document.getElementById(id).addEventListener('change', ()=>{ applyBorders(); persistSettings(); });
 });
 
-const colorRow = document.getElementById('colorRow');
-THEMES.forEach((t,i)=>{
-  const item = document.createElement('div');
-  item.className = 'theme-item';
-  const sw = document.createElement('div');
-  sw.className = 'swatch';
-  sw.dataset.i = i;
-  sw.style.background = `linear-gradient(135deg, ${t.board} 50%, ${t.brass} 50%)`;
-  sw.title = t.name;
-  const cap = document.createElement('span');
-  cap.textContent = t.name;
-  item.appendChild(sw);
-  item.appendChild(cap);
-  colorRow.appendChild(item);
-  const pick = ()=>{
-    document.documentElement.style.setProperty('--board', t.board);
-    document.documentElement.style.setProperty('--brass', t.brass);
-    document.documentElement.style.setProperty('--paper', t.paper);
-    document.documentElement.style.setProperty('--ink', t.ink);
-    document.getElementById('tickerBg').value = t.board;
-    document.getElementById('tickerFg').value = t.brass;
-    document.documentElement.style.setProperty('--board-ink', t.brass);
-    colorRow.querySelectorAll('.swatch').forEach(c=>c.classList.remove('active'));
-    sw.classList.add('active');
-    if(!applyingFromCloud) persistSettings();
-  };
-  sw.onclick = pick;
-  item.onclick = pick;
+buildSwatchPicker('bgRow', BG_COLORS, ()=>curBg, (v)=>{
+  curBg = v;
+  applyBoardColor();
 });
-
-document.getElementById('fontSelect').onchange = (e)=>{
-  const fam = e.target.value;
-  document.documentElement.style.setProperty('--content-font', `'${fam}', serif`);
+buildSwatchPicker('fgRow', FG_COLORS, ()=>curFg, (v)=>{
+  curFg = v;
+  document.documentElement.style.setProperty('--board-ink', v);
+});
+buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{
+  curBorderColor = v;
+  applyBorders();
+});
+buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{
+  curBorderStyle = v;
+  applyBorders();
+});
+buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{
+  curFont = v;
+  document.documentElement.style.setProperty('--content-font', `'${v}', serif`);
   currentTickerText = '';
   updateTicker();
-  persistSettings();
-};
+});
+buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{
+  curSize = v;
+  document.documentElement.style.setProperty('--ticker-size', v + 'px');
+  updateTickerHeight();
+  currentTickerText = '';
+  updateTicker();
+});
+buildChipPicker('gapRow', GAPS, ()=>curGap, (v)=>{
+  curGap = v;
+  currentTickerText = '';
+  updateTicker();
+});
+
 document.getElementById('speedMinus').onclick = ()=>{
   tickerSpeed = Math.max(SPEED_MIN, tickerSpeed - 1); // نمبر کم = تیز
   updateSpeedDisplay();
@@ -1072,21 +1144,16 @@ document.getElementById('thickPlus').onclick = ()=>{
   setTimeout(()=>setBoardTop(boardTop), 0);
   persistSettings();
 };
-document.getElementById('sizeSelect').onchange = (e)=>{
-  document.documentElement.style.setProperty('--ticker-size', e.target.value + 'px');
-  updateTickerHeight();
-  currentTickerText = '';
-  updateTicker();
+document.getElementById('opacityMinus').onclick = ()=>{
+  boardOpacity = Math.max(15, boardOpacity - 5);
+  updateOpacityDisplay();
   persistSettings();
 };
-document.getElementById('tickerBg').addEventListener('input', (e)=>{
-  document.documentElement.style.setProperty('--board', e.target.value);
+document.getElementById('opacityPlus').onclick = ()=>{
+  boardOpacity = Math.min(100, boardOpacity + 5);
+  updateOpacityDisplay();
   persistSettings();
-});
-document.getElementById('tickerFg').addEventListener('input', (e)=>{
-  document.documentElement.style.setProperty('--board-ink', e.target.value);
-  persistSettings();
-});
+};
 
 document.getElementById('addBtn').onclick = addOrSaveNote;
 document.getElementById('cancelEditBtn').onclick = resetForm;
@@ -1100,39 +1167,45 @@ function applySettings(){
   applySettingsObj(loadSettings());
 }
 function applySettingsObj(s){
-  if(s.theme !== undefined){
-    const item = colorRow.children[s.theme];
-    if(item) item.click();
-  } else if(colorRow.children[0]){
-    const firstSw = colorRow.children[0].querySelector('.swatch');
-    if(firstSw) firstSw.classList.add('active');
-  }
-  if(s.font){ document.getElementById('fontSelect').value = s.font; document.documentElement.style.setProperty('--content-font', `'${s.font}', serif`); }
-  if(s.speed){ tickerSpeed = parseInt(s.speed) || 14; updateSpeedDisplay(); }
-  if(s.size){
-    document.getElementById('sizeSelect').value = s.size;
-    document.documentElement.style.setProperty('--ticker-size', s.size + 'px');
-  }
-  if(s.bg){ document.getElementById('tickerBg').value = s.bg; document.documentElement.style.setProperty('--board', s.bg); }
-  if(s.fg){ document.getElementById('tickerFg').value = s.fg; document.documentElement.style.setProperty('--board-ink', s.fg); }
-  if(s.gap){ document.getElementById('gapSelect').value = s.gap; }
-  if(s.borderTopColor){ document.getElementById('borderTopColor').value = s.borderTopColor; }
-  if(s.borderBottomColor){ document.getElementById('borderBottomColor').value = s.borderBottomColor; }
+  applyingFromCloud = true;
+  if(s.bg){ curBg = s.bg; }
+  if(s.fg){ curFg = s.fg; document.documentElement.style.setProperty('--board-ink', s.fg); }
+  if(s.font){ curFont = s.font; document.documentElement.style.setProperty('--content-font', `'${s.font}', serif`); }
+  if(s.speed){ tickerSpeed = parseInt(s.speed) || 14; }
+  if(s.size){ curSize = s.size; document.documentElement.style.setProperty('--ticker-size', s.size + 'px'); }
+  if(s.gap){ curGap = s.gap; }
+  if(s.borderColor){ curBorderColor = s.borderColor; }
+  if(s.borderStyle){ curBorderStyle = s.borderStyle; }
+  if(s.opacity !== undefined){ boardOpacity = parseInt(s.opacity) || 100; }
   document.getElementById('borderTopOn').checked = !!s.borderTopOn;
   document.getElementById('borderBottomOn').checked = (s.borderBottomOn !== undefined) ? !!s.borderBottomOn : true;
+
+  // اب سکرین پر تمام سویچ/چپ لسٹیں دوبارہ بنائیں تاکہ صحیح فعال آئٹم نظر آئے
+  buildSwatchPicker('bgRow', BG_COLORS, ()=>curBg, (v)=>{ curBg=v; applyBoardColor(); });
+  buildSwatchPicker('fgRow', FG_COLORS, ()=>curFg, (v)=>{ curFg=v; document.documentElement.style.setProperty('--board-ink', v); });
+  buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{ curBorderColor=v; applyBorders(); });
+  buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{ curBorderStyle=v; applyBorders(); });
+  buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{ curFont=v; document.documentElement.style.setProperty('--content-font', `'${v}', serif`); currentTickerText=''; updateTicker(); });
+  buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{ curSize=v; document.documentElement.style.setProperty('--ticker-size', v+'px'); updateTickerHeight(); currentTickerText=''; updateTicker(); });
+  buildChipPicker('gapRow', GAPS, ()=>curGap, (v)=>{ curGap=v; currentTickerText=''; updateTicker(); });
+
+  applyBoardColor();
   applyBorders();
   updateSpeedDisplay();
+  updateOpacityDisplay();
   if(s.thickness !== undefined){ barExtraH = parseInt(s.thickness) || 0; }
   updateThickDisplay();
   if(s.posTop !== undefined){ setBoardTop(s.posTop); }
+  applyingFromCloud = false;
 }
 function applyBorders(){
   const topOn = document.getElementById('borderTopOn').checked;
   const botOn = document.getElementById('borderBottomOn').checked;
   document.documentElement.style.setProperty('--border-top-w', topOn ? '4px' : '0px');
-  document.documentElement.style.setProperty('--border-top-color', document.getElementById('borderTopColor').value);
   document.documentElement.style.setProperty('--border-bottom-w', botOn ? '4px' : '0px');
-  document.documentElement.style.setProperty('--border-bottom-color', document.getElementById('borderBottomColor').value);
+  document.documentElement.style.setProperty('--border-top-color', curBorderColor);
+  document.documentElement.style.setProperty('--border-bottom-color', curBorderColor);
+  document.documentElement.style.setProperty('--border-style', curBorderStyle);
 }
 
 renderDayChips();
