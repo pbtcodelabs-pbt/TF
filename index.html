@@ -81,7 +81,6 @@
     max-width:480px;
     background:var(--board);
     color:var(--board-ink);
-    z-index:500;
     width:100%;
     border-top:var(--border-top-w,0px) var(--border-style,solid) var(--border-top-color,#C9A227);
     border-bottom:var(--border-bottom-w,4px) var(--border-style,solid) var(--border-bottom-color,#C9A227);
@@ -91,6 +90,7 @@
     border-image-repeat:round;
     padding-top:env(safe-area-inset-top);
     touch-action:none;
+    z-index:960;
     -webkit-user-select:none; user-select:none;
     -webkit-touch-callout:none;
   }
@@ -271,10 +271,19 @@
   .clip-empty{ text-align:center; color:#a89f8a; font-size:12px; padding:16px 0; font-family:var(--ui-font); }
 
   /* ===== Settings drawer (right side) ===== */
-  .drawer-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:850; display:none; }
+  .drawer-overlay{
+    position:fixed;
+    top:calc(var(--ticker-h) + var(--border-top-w,0px) + var(--border-bottom-w,4px) + env(safe-area-inset-top,0px));
+    left:0; right:0; bottom:0;
+    background:rgba(0,0,0,.35); z-index:850; display:none;
+  }
   .drawer-overlay.open{ display:block; }
   .settings-drawer{
-    position:fixed; top:0; right:0; height:100%; width:84%; max-width:360px;
+    position:fixed;
+    top:calc(var(--ticker-h) + var(--border-top-w,0px) + var(--border-bottom-w,4px) + env(safe-area-inset-top,0px));
+    right:0;
+    height:calc(100% - (var(--ticker-h) + var(--border-top-w,0px) + var(--border-bottom-w,4px) + env(safe-area-inset-top,0px)));
+    width:84%; max-width:360px;
     background:#F3ECDA; z-index:900; transform:translateX(100%);
     transition:transform .22s ease; overflow-y:auto;
     box-shadow:-6px 0 24px rgba(0,0,0,.3);
@@ -292,13 +301,13 @@
   .dd{ border-bottom:1px solid var(--line); }
   .dd-head{
     display:flex; align-items:center; justify-content:space-between;
-    padding:11px 2px; cursor:pointer;
+    padding:9px 2px;
   }
   .dd-label{ font-size:13px; font-family:var(--ui-font); font-weight:700; color:var(--ink); }
   .dd-current{ display:flex; align-items:center; gap:6px; }
   .dd-dot{ width:16px;height:16px;border-radius:5px; border:1px solid rgba(0,0,0,.15); flex-shrink:0;}
-  .dd-caret{ font-size:10px; color:#8b8578; transition:transform .2s; }
-  .dd.open .dd-caret{ transform:rotate(180deg); }
+  .dd-caret{ display:none; }
+  .dd-body{ display:block !important; padding:2px 2px 14px; }
   .dd-body{ display:none; padding:2px 2px 14px; }
   .dd.open .dd-body{ display:block; }
   .shade-row{ display:flex; align-items:center; gap:8px; margin-top:10px; }
@@ -327,12 +336,13 @@
   .swatch.active{ border-color:var(--brass); box-shadow:0 0 0 2px var(--brass), 0 1px 4px rgba(0,0,0,.2); }
   .srow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .srow .slabel{ font-size:12px; color:var(--ink); font-family:var(--ui-font); font-weight:600; }
-  .swatch-pick{ display:flex; gap:7px; flex-wrap:wrap; }
+  .swatch-pick{ display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto; padding:2px 1px 6px; scrollbar-width:thin; }
   .swatch-pick .swatch{ width:26px; height:26px; flex:0 0 26px; border-radius:7px; }
-  .chip-pick{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip-pick{ display:flex; gap:6px; flex-wrap:nowrap; overflow-x:auto; padding:2px 1px 6px; scrollbar-width:thin; }
   .chip-pick .chip{
     padding:6px 10px; border-radius:14px; border:1px solid var(--line); background:#fff;
     font-family:var(--ui-font); font-size:11px; cursor:pointer; color:var(--ink);
+    white-space:nowrap; flex:0 0 auto;
   }
   .chip-pick .chip.active{ background:var(--brass); border-color:var(--brass); color:#2b2320; font-weight:700; }
 
@@ -448,29 +458,31 @@
   <div class="drawer-body">
     <div class="drawer-note">جس پیغام کو علیحدہ رنگ/بارڈر دیا ہو، پٹی پر اسی کی باری پر وہی رنگ خودکار لگے گا — باقی پیغام نیچے دیے ڈیفالٹ رنگ کے ساتھ چلیں گے۔</div>
 
-    <div class="dd" data-dd="bg">
-      <div class="dd-head"><span class="dd-label">بیک گراؤنڈ رنگ (ڈیفالٹ)</span><span class="dd-current"><span class="dd-dot" id="bgDot"></span><span class="dd-caret">▾</span></span></div>
+    <div class="dd" data-dd="themeshade">
+      <div class="dd-head"><span class="dd-label">تھیم ہلکا/گہرا (سب رنگ اکٹھے)</span></div>
       <div class="dd-body">
-        <div class="scontrol swatch-pick" id="bgRow"></div>
-        <div class="shade-row">
-          <span class="mini-label">ہلکا/گہرا</span>
-          <button type="button" class="stepbtn sm" id="shadeMinus">−</button>
-          <span class="stepval" id="shadeValue">0</span>
-          <button type="button" class="stepbtn sm" id="shadePlus">+</button>
+        <div class="srow">
+          <span class="slabel">− ہلکا / + گہرا</span>
+          <div class="scontrol">
+            <button type="button" class="stepbtn sm" id="themeShadeMinus">−</button>
+            <span class="stepval" id="themeShadeValue">0</span>
+            <button type="button" class="stepbtn sm" id="themeShadePlus">+</button>
+          </div>
         </div>
       </div>
     </div>
 
+    <div class="dd" data-dd="bg">
+      <div class="dd-head"><span class="dd-label">بیک گراؤنڈ رنگ (ڈیفالٹ)</span><span class="dd-current"><span class="dd-dot" id="bgDot"></span></span></div>
+      <div class="dd-body">
+        <div class="scontrol swatch-pick" id="bgRow"></div>
+      </div>
+    </div>
+
     <div class="dd" data-dd="fg">
-      <div class="dd-head"><span class="dd-label">لکھائی کا رنگ (ڈیفالٹ)</span><span class="dd-current"><span class="dd-dot" id="fgDot"></span><span class="dd-caret">▾</span></span></div>
+      <div class="dd-head"><span class="dd-label">لکھائی کا رنگ (ڈیفالٹ)</span><span class="dd-current"><span class="dd-dot" id="fgDot"></span></span></div>
       <div class="dd-body">
         <div class="scontrol swatch-pick" id="fgRow"></div>
-        <div class="shade-row">
-          <span class="mini-label">ہلکا/گہرا</span>
-          <button type="button" class="stepbtn sm" id="fgShadeMinus">−</button>
-          <span class="stepval" id="fgShadeValue">0</span>
-          <button type="button" class="stepbtn sm" id="fgShadePlus">+</button>
-        </div>
       </div>
     </div>
 
@@ -544,12 +556,6 @@
         </div>
         <div class="subgroup-label">بارڈر کا رنگ</div>
         <div class="scontrol swatch-pick" id="borderColorRow"></div>
-        <div class="shade-row">
-          <span class="mini-label">ہلکا/گہرا</span>
-          <button type="button" class="stepbtn sm" id="borderShadeMinus">−</button>
-          <span class="stepval" id="borderShadeValue">0</span>
-          <button type="button" class="stepbtn sm" id="borderShadePlus">+</button>
-        </div>
         <div class="subgroup-label">بارڈر کا سادہ انداز</div>
         <div class="scontrol chip-pick" id="borderStyleRow"></div>
         <div class="subgroup-label">خوبصورت بارڈر ٹیمپلیٹ</div>
@@ -826,29 +832,29 @@ function setSyncStatus(state){
 // ہر پیلٹ میں صرف ایک ٹھوس رنگ — کوئی گریڈینٹ/ڈبل رنگ نہیں
 // (ہلکے اور گہرے دونوں طرح کے رنگ موجود ہیں — + / − سے مزید ہلکا/گہرا کیا جا سکتا ہے)
 const BG_COLORS = [
-  {name:'برص', v:'#1F2E2B'}, {name:'سبزی', v:'#1E3323'}, {name:'مہندی', v:'#2B2118'},
-  {name:'نیلگوں', v:'#1A2733'}, {name:'روشن', v:'#F3ECDA'}, {name:'سرخی', v:'#3A1418'},
-  {name:'آسمانی', v:'#2B4C6F'}, {name:'جامنی', v:'#3B2A4A'}, {name:'زیتونی', v:'#3A3A1E'},
+  {name:'برص', v:'#1F2E2B'}, {name:'روشن', v:'#F3ECDA'}, {name:'سبزی', v:'#1E3323'},
+  {name:'ہلکا سبز', v:'#DCEBD8'}, {name:'مہندی', v:'#2B2118'}, {name:'ہلکی چائے', v:'#F0E2C9'},
+  {name:'نیلگوں', v:'#1A2733'}, {name:'ہلکا نیلا', v:'#D9E8F5'}, {name:'سرخی', v:'#3A1418'},
+  {name:'ہلکا گلابی', v:'#F6DEDA'}, {name:'آسمانی', v:'#2B4C6F'}, {name:'ہلکا سنہری', v:'#F5E7B8'},
+  {name:'جامنی', v:'#3B2A4A'}, {name:'ہلکا فیروزی', v:'#D7EFE9'}, {name:'زیتونی', v:'#3A3A1E'},
   {name:'قہوہ', v:'#4A2E1E'}, {name:'سلیٹی', v:'#33393E'}, {name:'گلابی', v:'#4A222E'},
   {name:'فیروزی', v:'#1B3B3A'}, {name:'شاہی نیلا', v:'#1E2A5E'}, {name:'گہرا سرخ', v:'#5C1A1A'},
   {name:'کالا سنہری', v:'#12130F'},
-  {name:'ہلکا سبز', v:'#DCEBD8'}, {name:'ہلکا سنہری', v:'#F5E7B8'}, {name:'ہلکا نیلا', v:'#D9E8F5'},
-  {name:'ہلکا گلابی', v:'#F6DEDA'}, {name:'ہلکی چائے', v:'#F0E2C9'}, {name:'ہلکا فیروزی', v:'#D7EFE9'},
 ];
 const FG_COLORS = [
   {name:'کریمی', v:'#F3E9C9'}, {name:'سفید', v:'#FFFFFF'}, {name:'سنہری', v:'#C9A227'},
-  {name:'سبز', v:'#8FB996'}, {name:'نارنجی', v:'#D98E4A'}, {name:'آسمانی', v:'#7FA8C9'},
+  {name:'ہلکا سبز', v:'#C3E6C3'}, {name:'سبز', v:'#8FB996'}, {name:'ہلکا سنہری', v:'#F0DE9A'},
+  {name:'نارنجی', v:'#D98E4A'}, {name:'ہلکا آسمانی', v:'#C7E0F0'}, {name:'آسمانی', v:'#7FA8C9'},
   {name:'گلابی', v:'#E0847A'}, {name:'گہرا', v:'#2B2320'}, {name:'قہوہ', v:'#8B5E1F'},
   {name:'سرخی', v:'#A24A3F'}, {name:'فیروزی', v:'#6FC2B4'}, {name:'ارغوانی', v:'#B48AD1'},
   {name:'زرد', v:'#E8D25A'},
-  {name:'ہلکا سبز', v:'#C3E6C3'}, {name:'ہلکا سنہری', v:'#F0DE9A'}, {name:'ہلکا آسمانی', v:'#C7E0F0'},
 ];
 const BORDER_COLORS = [
-  {name:'سنہری', v:'#C9A227'}, {name:'تانبا', v:'#D98E4A'}, {name:'گلابی سونا', v:'#E0847A'},
-  {name:'چاندی', v:'#7FA8C9'}, {name:'سبز', v:'#8FB996'}, {name:'سفید', v:'#FFFFFF'},
+  {name:'سنہری', v:'#C9A227'}, {name:'سفید', v:'#FFFFFF'}, {name:'تانبا', v:'#D98E4A'},
+  {name:'ہلکا سبز', v:'#CFEACB'}, {name:'گلابی سونا', v:'#E0847A'}, {name:'ہلکا سنہری', v:'#F3E5AC'},
+  {name:'چاندی', v:'#7FA8C9'}, {name:'ہلکا گلابی', v:'#F6D8D2'}, {name:'سبز', v:'#8FB996'},
   {name:'کانسی', v:'#8B5E1F'}, {name:'زنگی', v:'#A24A3F'}, {name:'جامنی', v:'#3B2A4A'},
   {name:'گہرا', v:'#2B2320'}, {name:'فیروزی', v:'#6FC2B4'}, {name:'شاہی سنہری', v:'#E8C24A'},
-  {name:'ہلکا سبز', v:'#CFEACB'}, {name:'ہلکا سنہری', v:'#F3E5AC'}, {name:'ہلکا گلابی', v:'#F6D8D2'},
 ];
 const BORDER_STYLES = [
   {name:'سادہ', v:'solid'}, {name:'ڈیشڈ', v:'dashed'}, {name:'نقطے', v:'dotted'},
@@ -1001,19 +1007,11 @@ function updateOpacityDisplay(){
   if(el) el.textContent = boardOpacity + '%';
   applyBoardColor();
 }
-function updateShadeDisplay(){
-  const el = document.getElementById('shadeValue');
+function updateThemeShadeDisplay(){
+  const el = document.getElementById('themeShadeValue');
   if(el) el.textContent = curBgShade;
   applyBoardColor();
-}
-function updateFgShadeDisplay(){
-  const el = document.getElementById('fgShadeValue');
-  if(el) el.textContent = curFgShade;
   document.documentElement.style.setProperty('--board-ink', effectiveFg());
-}
-function updateBorderShadeDisplay(){
-  const el = document.getElementById('borderShadeValue');
-  if(el) el.textContent = curBorderShade;
   applyBorders();
 }
 function updateGapDisplay(){
@@ -1070,6 +1068,26 @@ function buildChipPicker(containerId, list, getCurrent, onPick){
     };
     row.appendChild(chip);
   });
+}
+// ایک لائن ڈراپ ڈاؤن (select) — فونٹ/سائز/سیدھ/بارڈر اسٹائل وغیرہ کے لیے، فوری اثر
+function buildSelectPicker(containerId, list, getCurrent, onPick){
+  const row = document.getElementById(containerId);
+  if(!row) return;
+  row.innerHTML = '';
+  const sel = document.createElement('select');
+  sel.style.width = '100%';
+  list.forEach(item=>{
+    const opt = document.createElement('option');
+    opt.value = item.v;
+    opt.textContent = item.name;
+    if(item.v === getCurrent()) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.onchange = ()=>{
+    onPick(sel.value);
+    if(!applyingFromCloud) persistSettings();
+  };
+  row.appendChild(sel);
 }
 
 // ===== فی میسج رنگ/فونٹ چننے والے پکرز — پہلا آپشن ہمیشہ "ڈیفالٹ" (یعنی گلوبل سیٹنگ استعمال ہو) =====
@@ -1615,18 +1633,7 @@ document.getElementById('modalOverlay').onclick = closeAndResetModal;
   document.getElementById(id).addEventListener('change', ()=>{ applyBorders(); persistSettings(); });
 });
 
-/* ===== ڈراپ ڈاؤن (accordion) — ایک وقت میں صرف ایک کھلا رہے ===== */
-function setupAccordion(){
-  document.querySelectorAll('.dd').forEach(dd=>{
-    const head = dd.querySelector('.dd-head');
-    head.onclick = ()=>{
-      const isOpen = dd.classList.contains('open');
-      document.querySelectorAll('.dd.open').forEach(o=>{ if(o!==dd) o.classList.remove('open'); });
-      dd.classList.toggle('open', !isOpen);
-    };
-  });
-}
-setupAccordion();
+/* ===== تمام سیٹنگز ہمیشہ کھلی رہتی ہیں — کھولنے/بند کرنے کی ضرورت نہیں ===== */
 
 buildSwatchPicker('bgRow', BG_COLORS, ()=>curBg, (v)=>{
   curBg = v;
@@ -1640,26 +1647,26 @@ buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{
   curBorderColor = v;
   applyBorders();
 });
-buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{
+buildSelectPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{
   curBorderStyle = v;
   applyBorders();
 });
-buildChipPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{
+buildSelectPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{
   curBorderTemplate = v;
   applyBorders();
 });
-buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{
+buildSelectPicker('fontRow', FONTS, ()=>curFont, (v)=>{
   curFont = v;
   document.documentElement.style.setProperty('--content-font', `'${v}', serif`);
   refreshPlaybackNow();
 });
-buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{
+buildSelectPicker('sizeRow', SIZES, ()=>curSize, (v)=>{
   curSize = v;
   document.documentElement.style.setProperty('--ticker-size', v + 'px');
   updateTickerHeight();
   refreshPlaybackNow();
 });
-buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{
+buildSelectPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{
   setTextAlign(v);
 });
 refreshNoteStylePickers();
@@ -1730,39 +1737,15 @@ document.getElementById('opacityPlus').onclick = ()=>{
   updateOpacityDisplay();
   persistSettings();
 };
-document.getElementById('shadeMinus').onclick = ()=>{
-  curBgShade = Math.max(SHADE_MIN, curBgShade - 10);
-  updateShadeDisplay();
+document.getElementById('themeShadeMinus').onclick = ()=>{
+  curBgShade = curFgShade = curBorderShade = Math.max(SHADE_MIN, curBgShade - 10);
+  updateThemeShadeDisplay();
   updateDots();
   persistSettings();
 };
-document.getElementById('shadePlus').onclick = ()=>{
-  curBgShade = Math.min(SHADE_MAX, curBgShade + 10);
-  updateShadeDisplay();
-  updateDots();
-  persistSettings();
-};
-document.getElementById('fgShadeMinus').onclick = ()=>{
-  curFgShade = Math.max(SHADE_MIN, curFgShade - 10);
-  updateFgShadeDisplay();
-  updateDots();
-  persistSettings();
-};
-document.getElementById('fgShadePlus').onclick = ()=>{
-  curFgShade = Math.min(SHADE_MAX, curFgShade + 10);
-  updateFgShadeDisplay();
-  updateDots();
-  persistSettings();
-};
-document.getElementById('borderShadeMinus').onclick = ()=>{
-  curBorderShade = Math.max(SHADE_MIN, curBorderShade - 10);
-  updateBorderShadeDisplay();
-  updateDots();
-  persistSettings();
-};
-document.getElementById('borderShadePlus').onclick = ()=>{
-  curBorderShade = Math.min(SHADE_MAX, curBorderShade + 10);
-  updateBorderShadeDisplay();
+document.getElementById('themeShadePlus').onclick = ()=>{
+  curBgShade = curFgShade = curBorderShade = Math.min(SHADE_MAX, curBgShade + 10);
+  updateThemeShadeDisplay();
   updateDots();
   persistSettings();
 };
@@ -1811,19 +1794,17 @@ function applySettingsObj(s){
   buildSwatchPicker('bgRow', BG_COLORS, ()=>curBg, (v)=>{ curBg=v; applyBoardColor(); });
   buildSwatchPicker('fgRow', FG_COLORS, ()=>curFg, (v)=>{ curFg=v; document.documentElement.style.setProperty('--board-ink', effectiveFg()); });
   buildSwatchPicker('borderColorRow', BORDER_COLORS, ()=>curBorderColor, (v)=>{ curBorderColor=v; applyBorders(); });
-  buildChipPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{ curBorderStyle=v; applyBorders(); });
-  buildChipPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{ curBorderTemplate=v; applyBorders(); });
-  buildChipPicker('fontRow', FONTS, ()=>curFont, (v)=>{ curFont=v; document.documentElement.style.setProperty('--content-font', `'${v}', serif`); refreshPlaybackNow(); });
-  buildChipPicker('sizeRow', SIZES, ()=>curSize, (v)=>{ curSize=v; document.documentElement.style.setProperty('--ticker-size', v+'px'); updateTickerHeight(); refreshPlaybackNow(); });
-  buildChipPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{ setTextAlign(v); });
+  buildSelectPicker('borderStyleRow', BORDER_STYLES, ()=>curBorderStyle, (v)=>{ curBorderStyle=v; applyBorders(); });
+  buildSelectPicker('borderTemplateRow', BORDER_TEMPLATES, ()=>curBorderTemplate, (v)=>{ curBorderTemplate=v; applyBorders(); });
+  buildSelectPicker('fontRow', FONTS, ()=>curFont, (v)=>{ curFont=v; document.documentElement.style.setProperty('--content-font', `'${v}', serif`); refreshPlaybackNow(); });
+  buildSelectPicker('sizeRow', SIZES, ()=>curSize, (v)=>{ curSize=v; document.documentElement.style.setProperty('--ticker-size', v+'px'); updateTickerHeight(); refreshPlaybackNow(); });
+  buildSelectPicker('textAlignRow', TEXT_ALIGNS, ()=>curTextAlign, (v)=>{ setTextAlign(v); });
 
   applyBoardColor();
   applyBorders();
   updateSpeedDisplay();
   updateOpacityDisplay();
-  updateShadeDisplay();
-  updateFgShadeDisplay();
-  updateBorderShadeDisplay();
+  updateThemeShadeDisplay();
   updateGapDisplay();
   updateDots();
   cycleIndex = 0; cycleRunning = false;
